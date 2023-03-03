@@ -1,0 +1,51 @@
+h1{
+  font-size: 28px;
+}
+h2{
+  font-size: 24px;
+}
+h3{
+  font-size: 20px;
+}
+h5{
+  font-size: 15px;
+  font-weight: bold;
+  font-style: italic;
+}
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 14px;
+    border-left: 5px solid #eee;
+    font-style: italic
+}
+pre, code {white-space:pre !important; overflow-x:scroll !important}
+
+.check {
+  background-color: #fce5cd;
+  padding-left:20px;
+  padding-top:10px;
+  padding-bottom:5px;
+  padding-right:20px;
+}
+
+.container-fluid.main-container{
+  max-width: 75%
+}
+
+.tabset{
+    display: flex;
+}
+
+.nav.nav-pills {
+    width: 200px;
+    padding-top:40px;
+    padding-right:20px;
+}
+.nav.nav-pills li{
+    width: 200px;
+}
+.tab-content{
+  padding-left:20px;
+  max-width: 75%;
+}
