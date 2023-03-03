@@ -1,0 +1,274 @@
+---
+title: "Multivariate Miscellany"
+subtitle: "Lecture 11.1 Dimension Reduction Applications"
+author:  "Lauren Sullivan"
+date: "Module: Multivariate Models"
+output: beamer_presentation
+mainfont: Calibri 
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+rm(list=ls())
+library(tidyverse)
+library(vegan)  # for distance matrices
+library(goeveg)  # for dim checks
+library(rgl)  #for 3D nmds plots
+library(vegan3d)  #for 3D nmds plots
+library(stats)  # for PCA
+library(car)  #for Anova()
+
+
+
+restoration <- read_csv("../data/restoration.csv")
+colors <- c("#009E73", "#D55E00", "#CC79A7")
+
+```
+---
+
+
+## Readings
+
+\textbf{Required for class:} 
+  
+  - NA
+
+\bigskip\textbf{Optional:}
+
+- [\textcolor{teal}{Groves, A. M., Bauer, J. T., and Brudvig, L. A. (2020)  Lasting signature of planting year weather on restored grasslands. \textit{Scientific Reports}.}](https://www.nature.com/articles/s41598-020-62123-7.pdf) 
+
+
+
+
+
+## Dimension Reduction and its Application
+
+We have talked in depth about how multivariate ordination can be a great way to reduce dimensions for multivariate, correlated data.  But we have not yet put into practice this idea.
+
+\bigskip
+
+We are going to focus on how to reduce dimensions and then test hypotheses with these reduced dimensions.
+
+\bigskip
+\bigskip
+
+We will start with creating a reduced dimension X variable.
+
+
+
+## Data Example
+
+How does a restoration site's age and planting-year weather influence its total cover of desireable (sown species) and non-desireable (non-sown species, or likely weeds) species?
+
+\bigskip
+
+```{r, out.width='100%', fig.align='center', fig.cap=''}
+knitr::include_graphics('../images/groves.png')
+```
+
+
+## The Data
+
+\bigskip
+\scriptsize
+```{r, eval=TRUE, echo=TRUE,  warning=FALSE,  message=FALSE, fig.height=7}
+restoration[1:15, 1:5]
+
+```
+
+## Reducing Climate Dimension
+
+\bigskip
+\scriptsize
+```{r, eval=TRUE, echo=TRUE,  warning=FALSE,  message=FALSE, fig.height=7}
+
+rest.pca <- prcomp(restoration[, c(4:14)], center = TRUE, scale = TRUE, 
+                   na.rm = TRUE)
+summary(rest.pca)
+
+```
+
+\bigskip
+\normalsize
+
+Here, PC1 explains 39\% of the variance, and PC2 explains 22\% of the variance.
+
+
+
+## Reducing Climate Dimension
+
+\bigskip
+\scriptsize
+```{r, eval=TRUE, echo=TRUE,  warning=FALSE,  message=FALSE, fig.height=7}
+
+rest.pca$rotation[,1:2]
+
+```
+
+\bigskip
+\normalsize
+
+It looks like degree day (dd) tends to be correlating more with PC1, and preciptitation tends to be correlating more with PC2.
+
+
+
+
+## Reducing Climate Dimension
+
+Let's pull out our values for each plot for both PC1 and PC2.
+
+\bigskip
+\scriptsize
+```{r, eval=TRUE, echo=TRUE,  warning=FALSE,  message=FALSE, fig.height=7}
+
+clim <- rest.pca$x[, 1:2]
+clim[1:15, ]
+```
+
+
+## Reducing Climate Dimension
+
+And `cbind()` our climate dimensions to our original dataset since they are in the same order.
+
+\bigskip
+\scriptsize
+```{r, eval=TRUE, echo=TRUE,  warning=FALSE,  message=FALSE, fig.height=7}
+rest.m <- cbind(restoration, clim)
+rest.m[1:15, c(1:4, 46:47)]
+```
+
+
+## Linear Models with Reduced Dimensional Data
+
+Let's look at how the average cover of sown species (the desireable ones) is a function of restoration age, and the climate variables.
+
+\bigskip
+\scriptsize
+```{r, eval=TRUE, echo=TRUE,  warning=FALSE,  message=FALSE, fig.height=7}
+
+sown.cover.lm <- lm(log(Mean.Sown.Cover) ~ Age_2016 + PC1 + PC2, 
+                    data = rest.m, na.rm = TRUE)
+Anova(sown.cover.lm,  type = 3)
+
+```
+
+## Linear Models with Reduced Dimensional Data
+
+Let's look at how the average cover of non-sown species (the weedy ones) is a function of restoration age, and the climate variables.
+
+\bigskip
+\scriptsize
+```{r, eval=TRUE, echo=TRUE,  warning=FALSE,  message=FALSE, fig.height=7}
+
+nonsown.cover.lm <- lm(log(Mean.Nonsown.Cover) ~ Age_2016 + PC1 + PC2, 
+                    data = rest.m)
+Anova(nonsown.cover.lm,  type = 3)
+
+```
+
+
+## Linear Models with Reduced Dimensional Data
+
+What happens if you make your PC1 variable categorical based on how different the years are from average?  We will make an Average category where the climate variable is .75 standard deviations away from the average climate PC1, and a Warmest cagtegory for all values above this range, and Coolest for all values below this range.
+
+\bigskip
+\scriptsize
+```{r, eval=TRUE, echo=TRUE,  warning=FALSE,  message=FALSE, fig.height=7}
+x <- rest.m$PC1
+rest.m$group <- case_when(x > mean(x)+0.75*sd(x) ~ "Warmest",
+                  x < mean(x)+0.75*sd(x) & x > mean(x)-0.75*sd(x) ~ "Average",
+                  x < mean(x)-0.75*sd(x) ~ "Coolest")
+rest.m$group <- factor(rest.m$group, 
+                       levels = c("Coolest", "Average", "Warmest"))
+rest.m[1:5, c(1:3, 46:48)]
+```
+
+## Linear Models with Reduced Dimensional Data
+
+Let's look at how the average cover of non-sown species (the weedy ones) is a function of restoration age, and the climate variables.
+
+\bigskip
+\scriptsize
+```{r, eval=TRUE, echo=TRUE,  warning=FALSE,  message=FALSE, fig.height=7}
+
+nonsown.cover.lm2 <- lm(log(Mean.Nonsown.Cover) ~ Age_2016 + group, 
+                    data = rest.m)
+Anova(nonsown.cover.lm2,  type = 3)
+
+```
+
+
+
+## Graphing This Model
+\bigskip
+log(mean.nonsown.cover) ~ Age + group
+
+
+\bigskip
+\scriptsize
+```{r, eval=TRUE, echo=FALSE,  warning=FALSE,  message=FALSE, fig.height=6}
+ggplot(rest.m, aes(x = log(Mean.Nonsown.Cover), y = Age_2016, color = group))+
+  geom_point()+
+  theme_bw()+
+  scale_color_manual(values=colors)+ 
+  geom_smooth(method = "lm", se = TRUE)+
+  theme(text = element_text(size=18))+
+  labs(x = "Restoration Age", y = "log(Mean Non-Sown Cover per 1m2")
+```
+
+
+## Reduced Dimensional Y Variables
+
+You can do the same thing for response variables.  Say instead of wanting to look at plant cover, you want to look at how restoration age and climate affect the soil properties of each site.
+\bigskip
+\tiny
+```{r, eval=TRUE, echo=TRUE,  warning=FALSE,  message=FALSE, fig.height=7}
+
+
+restoration[, c(28:45)]
+```
+
+
+## Reduced Dimensional Y Variables
+
+Create a PCA for soil variables.
+
+\bigskip
+\scriptsize
+```{r, eval=TRUE, echo=TRUE,  warning=FALSE,  message=FALSE, fig.height=7}
+
+soil.pca <- prcomp(restoration[, c(28:45)], center = TRUE, scale = TRUE,
+                   na.rm = TRUE)
+summary(soil.pca)
+
+```
+
+\bigskip
+\normalsize
+PC1 explains 40\% of the variation, so let's use that for the Y.
+
+
+## Linear Model with Reduced Dimensional Y
+
+
+\bigskip
+\scriptsize
+```{r, eval=TRUE, echo=TRUE,  warning=FALSE,  message=FALSE, fig.height=7}
+
+soil <- soil.pca$x[, 1:2]
+colnames(soil) <- c("soilPC1", "soilPC2")
+rest.all <- cbind(rest.m, soil)
+
+soil.lm <- lm(soilPC1 ~ Age_2016 + PC1 + PC2, data = rest.all)
+Anova(soil.lm,  type = 3)
+
+
+
+```
+
+
+
+
+

@@ -1,0 +1,174 @@
+---
+title: "Multivariate General Linear Models"
+subtitle: "Lecture 08.1: Multivariate Overview"
+author:  "Lauren Sullivan"
+date: "Module: Multivariate Models"
+output: beamer_presentation
+mainfont: Calibri 
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+rm(list=ls())
+library(tidyverse)
+library(scatterplot3d)  # for 3D point figure.
+library(GGally)  #for scatmat plot and correlation plots
+library(PerformanceAnalytics)  #for creating the correlation plots with values on them
+
+
+sparrow <- read_csv("../data/sparrow.csv")
+
+```
+
+
+
+## Readings
+
+\textbf{Required for class:}
+
+  - NA
+
+\bigskip\textbf{Optional:}
+
+- [\textcolor{teal}{Healy. (1969) 259 Note: Rao's Paradox Concerning Multivariate Tests of Significance. \textit{Biometrics}.}](https://www.jstor.org/stable/pdf/2528798.pdf?casa_token=UZEX4Zq4I4cAAAAA:UbwfoIiNum8snVaBC6XCvKs7x5qfhVLiu2j7oBhtpf0Z8Zg4bgOagMLlz60QK2iNyGuP2M9xog0MXW28utbHzd2gB29zTEgv8jcl7ZAJ5ttsjqWh)
+
+
+
+## Univariate Analysis
+
+When analyzing univariate data (what we have been doing up till now), we have been learning how to explain the variation in a single dependent variable (Y).
+
+\scriptsize
+```{r, eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.height=6}
+
+ggplot(sparrow)+
+  geom_histogram(aes(x=AE), binwidth = 1)+  
+  theme_bw()+
+  theme(axis.title = element_text(face="bold", size=16))
+
+
+```
+
+
+## Multivariate Analysis
+
+When analyzing multivariate data, we will attempt to explain variation in more than one dependent variable (multiple Y's).
+
+\bigskip
+
+\scriptsize
+```{r, eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.height=6}
+scatterplot3d(sparrow[5:7])
+```
+
+## Why Multivariate?
+
+Multivariate analysis allows you to look at a more complex description of patterns in biology. In many cases, separate univariate analyses miss a covariation signal in the data, so it's important to think about data more fully if possible.
+
+\bigskip
+
+There are several ways to look at multivariate patterns from a matrix of **Y**'s.
+
+1.  Linear models: MANOVA/regression to test patterns
+2.  Ordination: PCA, nMDS, etc to visualize patterns
+3.  Permutation tests: PERMANOVA to test patterns
+
+
+## Rao's Paradox and Data Collection
+
+Increasing the number of dimensions of your data (# of Y's) means more information about a process, but for a given number of observations (rows of your dataset) the statistical power decreases.  You need to watch out to make sure you don't have too few *n*'s for the number of dependent variables (Y's).
+
+\bigskip
+There are a lot of suggestions for the number of observations you need.  Make sure you think about this consciously!
+
+- $n = 2*(\# Y)$
+- $n = 4*(\# Y)$
+- $n = (\# Y)^2$
+- $n_{group} = 2*(\# Y)$
+- $n_{group} = 4*(\# Y)$
+
+
+
+## Multivariate Data
+
+Multivariate data is can be described as:
+
+\begin{center}
+$\bf{Y} \sim MVN(\bf{\mu},\Sigma)$  
+\end{center}
+
+\bigskip
+With the Variance-Covariance (VCV) matrix that is described as:
+
+$$
+\bf{\Sigma} = \begin{bmatrix}
+s_{11} &  &  \\
+s_{21} & s_{22} &  \\
+s_{31} & s_{32} & s_{33}\\
+\end{bmatrix}
+$$
+
+
+## Correlation Matrix
+
+
+The VCV can be standardized to be the correlation matrix (last time was $\rho$ but I've replaced with 
+$r$'s). First you pull the $\sigma_i^2$ out of the matrix.
+$$
+\bf{\Sigma} = \sigma_i^2\begin{bmatrix}
+1 &  & \\
+ r_{21} & 1 &  \\
+ r_{31} & r_{32} & 1 \\
+\end{bmatrix}
+$$
+
+\bigskip
+Then you can simply look at the correlation matrix (get rid of $\sigma_i^2$, and $\bf{\Sigma}$ simplifies to $\bf{R}$). 
+
+$$
+\bf{R} = \begin{bmatrix}
+1 &  & \\
+ r_{21} & 1 &  \\
+ r_{31} & r_{32} & 1 \\
+\end{bmatrix}
+$$
+
+## Plotting the Correlation Matrix
+
+The correlation matrix can be visualized by plotting the correlation between variables.
+
+\bigskip
+\scriptsize
+```{r, eval=TRUE, echo=TRUE, warning=FALSE, message=FALSE, fig.height=5}
+
+chart.Correlation(sparrow[,5:7], histogram = TRUE, pch = 19)
+
+```
+
+
+## Another option in tidyverse
+
+The `GGally` library and `ggscatmat()` also makes these figures
+
+\bigskip
+\scriptsize
+```{r, eval=TRUE, echo=TRUE, warning=FALSE, message=FALSE, fig.height=5}
+
+ggscatmat(sparrow, columns = 5:7, alpha = 1)+
+  theme_bw()+
+  theme(axis.title = element_text(face="bold", size=16))
+
+```
+
+
+
+
+
+
+
+
+
+

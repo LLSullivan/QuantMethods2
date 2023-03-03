@@ -1,0 +1,126 @@
+---
+title: "Ordination 2"
+subtitle: "Lecture 10.3 PCoA"
+author:  "Lauren Sullivan"
+date: "Module: Multivariate Models"
+output: beamer_presentation
+mainfont: Calibri 
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+rm(list=ls())
+library(tidyverse)
+library(ape)  # for PCoA
+library(vegan)
+library(stats)  # for PCA
+library(ggbiplot) #For graphing PCA's in ggplot style.
+
+
+
+sparrow <- read_csv("../data/sparrow.csv")
+
+
+```
+---
+
+
+## Readings
+
+\textbf{Required for class:}
+
+  - NA
+
+\bigskip\textbf{Optional:}
+
+- [\textcolor{teal}{Legendre, P. (2018) 1.3. Principle Coordinate Analysis }](http://biol09.biol.umontreal.ca/PLcourses/Ordination_sections_1.3+1.4_PCoA_Eng.pdf)
+
+
+
+
+
+
+## Multivariate Analysis
+
+
+There are several ways to look at multivariate patterns from a matrix of **Y**'s.
+
+1.  Linear models: MANOVA/regression to test patterns
+
+2.  **Ordination: PCA, nMDS, etc to visualize patterns**
+
+3.  Permutation tests: PERMANOVA to test patterns
+
+
+
+## Principal Coordinate Analysis (PCoA)
+
+PCA works well for data where it's appropriate to maintain Euclidean distance among objects.
+
+- However, what do you do when have data that requires a different distance matrix, or where PCA is not a good model (e.g.: many 0's, presence/absence data)?
+
+\bigskip
+
+Principle coordinate analysis decomposes distance matrices (or dissimilarity matrices) such that distance among objects is preserved for **any** distance measure.
+
+- Sometimes PCoA is called metric multidimensional scaling (MDS) because it preserves relationships among objects.
+- This is opposed to nMDS that does not preserve distance, but attempts to preserve *relationships* among objects.
+
+
+## Understanding PCoA
+
+**Step 1:** Start with a distance matrix (**D**).
+
+**Step 2:** Transform elements in **D** to:  $\bf{A} = -\frac{1}{2}\bf{D}^2$
+
+**Step 3:** Double-center the matrix.
+
+  - Subtract row and column means from each element, and add grand mean. This positions the origin at the centroid of the scatter.
+
+
+**Step 4:** Eigen-decomposition of double-centered matrix.
+
+  - Eigen vectors are *coordinates* for the ordination plot. They do not describe aspects of the Y variables, only distances among objects/sites/samples (similar to nMDS).
+
+
+
+## Sparrow Data
+
+Let's look at this sparrow data again.
+
+```{r, out.width='90%', fig.align='center', fig.cap=''}
+knitr::include_graphics('../images/sparrow.jpg')
+```
+
+
+## PCoA
+
+Let's look again at our **Y** from the sparrow data but with a Manhattan distance matrix ("city block" distance).
+  
+- Use the `pcoa()` [\textcolor{teal}{function}](https://www.rdocumentation.org/packages/ape/versions/5.3/topics/pcoa) in the `ape` library.
+
+\bigskip
+\scriptsize
+```{r, eval=TRUE, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+sparrow.d <- vegdist(sparrow[, -c(1:3)], "manhattan")
+sparrow.pcoa <- pcoa(sparrow.d)
+sparrow.pcoa$values[1:10,1:5]
+```
+
+## Plotting
+
+
+\scriptsize
+```{r, eval=TRUE, echo=TRUE, warning=FALSE, message=FALSE, fig.height=6}
+biplot(sparrow.pcoa, plot.axes = c(1,2))
+```
+
+*Note:* Apparently you can plot the data on these ordination plots similar to nMDS with an env.fit, but I couldn't quite figure out how to get it to work.
+
+
+
+
+
+
