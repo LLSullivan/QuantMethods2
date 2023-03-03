@@ -1,0 +1,289 @@
+---
+title: "Problem Set 11"
+author: Due May 15, 2022
+output: 
+  html_document:
+    smart: no
+    theme: flatly
+    float: yes
+    css: "style.css"    
+editor_options: 
+  chunk_output_type: console
+mainfont: Arial
+mathfont: Arial
+fontsize: 12pt
+subtitle: Lauren Sullivan, BIO_SC 8002_01
+---
+
+
+# {.tabset .tabset-pills .tabset-fade}
+
+## Pokemon
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+###############
+#
+# 11 PROBLEM SET
+# 
+# DUE:        May 7, 2020
+# 
+# CREATED BY: Lauren Sullivan
+# FILES:      "pokemon.csv"
+#             "squamate_traits_dataset_slim.csv"
+#             "squamate_tree_slim.tre"
+#
+###############
+
+
+########### setup
+rm(list=ls())
+
+
+library(tidyverse)
+library(vegan)  #for standardization, distance matrices and nmds
+library(car)
+library(ape) ##for phylogenetic trees.
+library(nlme)   #for linear models
+library(geiger)  #for phylogenetic trees
+library(phytools) #for plotting phylogenetic trees
+
+########### data
+pokemon <- read_csv("../data/pokemon.csv")
+squamate_tree <- read.tree("../data/squamate_tree_slim.tre")
+squamate_traits <- read.csv("../data/squamate_traits_dataset_slim.csv", header=TRUE, row.names=1)
+```
+
+### Background
+
+I think it's time we all return to the pokemon dataset we began with in the beginning of the class.  If we want to become better Pokemon trainers, then we need to understand more about the basic biology of our Pokemon.  For example, it would be really helpful if we understood how the battle stats of each Pokemon (HP, Attack, Defense, Speed, Special Attack, Special Defense) were related to the a Pokemon's general size (height and weight).
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE, out.width='100%', fig.align='center', fig.cap=''}
+knitr::include_graphics('../images/pokemon.png')
+```
+
+
+
+**Q1**  Using the pokemon dataset, the first thing we want to do is try to find groups of Pokemon that are similar in terms of their battle stats.  It seems like a good hypothesis that their main Pokemon type (Type) would predict their battle stats.  Let's find out if our hypothesis is correct. Let's start by creating a PCoA plot in 2 dimensions of our Pokemon's battle stats (HP, Attack, Defense, Speed, Special_Attack, and Special_Defense). The literature commonly uses a Canberra distance matrix, and the data is already fairly uniform and thus does not need to be standardized. Run the PCoA, extract the first two PCoA axes and plot them.  Color the points by the Type of Pokemon.  Do you see any visual patterns?  What if the Pokemon is legendary or not (pokemon$isLegendary)?  Do you see any pattern here?
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+pokemon.d <- vegdist(pokemon[,4:9], "canberra")
+poke_pcoa <- pcoa(pokemon.d)
+scores <- data.frame(poke_pcoa$vectors[, 1:2])
+colnames(scores) <- c("PCoA1","PCoA2")
+
+pokemon <- cbind(pokemon, scores)
+
+
+
+##For Pokemon type, we don't see much of a pattern
+
+hull_Type <- pokemon %>%
+  group_by(Type) %>%
+  slice(chull(PCoA1, PCoA2))
+
+ggplot(pokemon, aes(x = PCoA1, y = PCoA2, color = Type, fill = Type))+
+  geom_point()+
+  theme_bw()+
+  theme(text = element_text(size=18))+
+  labs(x = "PCoA1", y = "PCoA2")+ 
+  geom_polygon(data = hull_Type, alpha = 0.5)
+
+
+
+## For if a Pokemon is legendary or not, we do see a trend.
+
+hull_Type <- pokemon %>%
+  group_by(isLegendary) %>%
+  slice(chull(PCoA1, PCoA2))
+
+ggplot(pokemon, aes(x = PCoA1, y = PCoA2, color = isLegendary, fill = isLegendary))+
+  geom_point()+
+  theme_bw()+
+  theme(text = element_text(size=18))+
+  labs(x = "PCoA1", y = "PCoA2")+ 
+  geom_polygon(data = hull_Type, alpha = 0.5)
+
+
+```
+
+
+
+**Q2** Now that you have extracted the PCoA scores in two dimensions, let's statistically test the hypothesis that the reduced dimensional scores for fighting stats (scores for PCoA1 and PCoA2) predict: 1) if a Pokemon is legendary, 2) a Pokemon's height, 3) a Pokemon's weight.  Use three separate models to test this. Don't worry about random effects here.
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+#Test 1.  Does a Pokemon's legendary status depend on it's 
+#   overall stats (PCoA1 and PCoA2)?
+
+mod1a <- lm(isLegendary ~ PCoA1 + PCoA2, data = pokemon)
+Anova(mod1a, type = 3)
+
+# Yes, the first PCoA dimension significantly predicts if a
+#   Pokemon is legendary or not.
+
+
+
+#Test 2.  Does a Pokemon's height depend on it's 
+#   overall stats (PCoA1 and PCoA2)?
+
+mod1b <- lm(Height ~ PCoA1 + PCoA2, data = pokemon)
+Anova(mod1b, type = 3)
+
+# Yes, the first PCoA dimension significantly predicts a 
+#   Pokemon's height
+
+
+
+#Test 3.  Does a Pokemon's weight depend on it's 
+#   overall stats (PCoA1 and PCoA2)?
+
+mod1c <- lm(Weight ~ PCoA1 + PCoA2, data = pokemon)
+Anova(mod1c, type = 3)
+
+# Yes, both PCoA axes predict a Pokemon's weight.
+```
+
+
+
+**Q3**  Create two plots that visualize the results from the tests looking at Pokemon's height and weight.
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+#Pokemon Height
+ggplot(pokemon, aes(x = PCoA1, y = Height))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  scale_y_log10()+
+  theme_bw()+
+  theme(text = element_text(size=18))+
+  labs(x = "PCoA1", y = "Height")
+
+#Pokemon Weight
+ggplot(pokemon, aes(x = PCoA1, y = Weight, color = PCoA2))+
+  geom_point()+
+  scale_y_log10()+
+  geom_smooth(method = "lm")+
+  theme_bw()+
+  theme(text = element_text(size=18))+
+  labs(x = "PCoA1", y = "Weight")
+
+```
+
+
+**Q4**  Using the function from the lecture on clustering, create a figure that shows the optimal number of clusters needed to represent how the PCoA plot data falls into groups. This should be using *k*-means clustering. Examine up to 15 clusters, and don't forget here you want to use the PCoA coordinates.  How many clusters would you use for *k*-means clustering, and why?
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+wssplot <- function(data, nc=15, seed=123){
+               wss <- (nrow(data)-1)*sum(apply(data,2,var))
+               for (i in 2:nc){
+                    set.seed(seed)
+                    wss[i] <- sum(kmeans(data, centers=i)$withinss)}
+                plot(1:nc, wss, type="b", xlab="Number of groups",
+                     ylab="Sum of squares within a group")}
+
+wssplot(pokemon[,18:19], nc = 15)
+
+
+```
+
+
+**Q5**  Given our plot from the last question, it seems save to choose 6 clusters for our analysis.  Run a *k*-means clustering analysis with 6 groups, and plot this data with colors for the 6 clusters.  Then, use a linear model to test the hypothesis that Pokemon Height ~ PCoA1 + Cluster. Summarize your results and their biological interpretation.
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+pokemon.kmns <- kmeans(pokemon[,18:19], centers = 6, nstart = 10)
+pokemon$clusters <- as_factor(pokemon.kmns$cluster)
+
+ggplot(pokemon, aes(x = PCoA1, y = PCoA2, color = clusters))+
+  geom_point()+
+  theme_bw()+
+  theme(text = element_text(size=18))+
+  labs(x = "PCoA1", y = "Height")
+
+mod2 <- lm(Height ~ PCoA1 + clusters, data = pokemon)
+Anova(mod2, type = 3)
+
+
+
+## So the PCoA1 which represents the major axis of their battle
+#   stats predicts a Pokemon's Height.  And so does the cluster
+#   the Pokemon is in, based on k-means clustering.  Which means
+#   that certain cluseters of Pokemon are taller than others.
+
+
+```
+
+
+
+
+
+
+## Squamates
+
+
+Ok let's switch gears a bit to get some practice accounting for phylogenies in statistical models.  We will be using a phylogenetic tree from: *Pyron, R.A., F.T. Burbrink, & J.J. Wiens. 2013. A phylogeny and revised classification of Squamata, including 4161 species of lizards and snakes. BMC Evolutionary Biology 13: 93.* [You can find the data on Dryad](https://datadryad.org/stash/dataset/doi:10.5061/dryad.82h0m).  Thank you to Christian for compiling this data for us to practice with.
+
+**Q6** Using `read.tree()`, read in the "squamate.tre" file and plot the tree with `plot(name_of_tree_object, cex=0.1)`.  *Hint: this is a huge tree, so I would recommend making the text for each tip label smaller with cex=0.5, and adding `fig.height=15` to your ````{r}` statement so you can view the whole thing better.*
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE, fig.height=15}
+
+plot(squamate_tree, cex = 0.5)
+
+```
+
+
+**Q7**  Let's double check that the names for the reptiles in the "squamates.tre" file are the same as those in the "squamate_traits.csv" file.  If there are species in the tree that are not in the data, we need to remove them.  If there are species in the data that are not in the tree, we also need to remove those!  How does it look?
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE, fig.height=15}
+name.check(squamate_tree, squamate_traits)
+
+## Ok, the names are good!!
+
+```
+
+
+**Q8**  Create a correlation for this tree assuming Brownian evolution.  Then, use a `gls()` to determine if a squamate's Clutch_size is a function of the species' Mass and Max_SVL.  Make sure to take the phylogeny into account.  Does this result change if you do not include phylogeny as a correlation?
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE, fig.height=15}
+bm<-corBrownian(1, squamate_tree)
+bm
+
+mod3 <- gls(Clutch_size ~ Mass + Max_SVL, data = squamate_traits,
+            correlation = bm)
+summary(mod3)
+
+## So, it looks like Max_SVL significantly predicts the clutch size
+#   of a squamate.
+
+mod4 <- gls(Clutch_size ~ Mass + Max_SVL, data = squamate_traits)
+summary(mod4)
+
+# When you do not consider the phylogeny, the qualitative results are the
+#   same, but the values are different.  So it's important to consider
+#   the phylogeny.
+
+```
+
+
+
+**Q9**  Create a figure that represents the significant results from the previous question. It's ok that this figure disregards the phylogenetic correlation.  Summarize your results.
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+ggplot(squamate_traits, aes(x = Max_SVL, y = Clutch_size))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  theme_bw()+
+  theme(text = element_text(size=18))+
+  labs(x = "Max SVL", y = "Clutch Size")
+
+
+# As the SVL increases, so does the clutch size.
+```
+

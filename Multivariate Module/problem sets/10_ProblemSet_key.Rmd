@@ -1,0 +1,255 @@
+---
+title: "Problem Set 10"
+author: Due May 6, 2022
+output: 
+  html_document:
+    smart: no
+    theme: flatly
+    float: yes
+    css: "style.css"    
+editor_options: 
+  chunk_output_type: console
+mainfont: Arial
+mathfont: Arial
+fontsize: 12pt
+subtitle: Lauren Sullivan, BIO_SC 8002_01
+---
+
+
+# {.tabset .tabset-pills .tabset-fade}
+
+## Liver Toxicity
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+###############
+#
+# 10 PROBLEM SET
+# 
+# DUE:        May 6, 2020
+# 
+# CREATED BY: Lauren Sullivan
+# FILES:      "liver.toxicity.csv"
+#             "dune.csv"
+#             "dune.env.csv"
+#
+###############
+
+
+########### setup
+rm(list=ls())
+
+
+library(tidyverse)
+library(vegan)  #for standardization, distance matrices and nmds
+library(stats)  # for PCA
+library(ggbiplot) # for graphing PCA
+
+########### data
+liver <- read_csv("../data/liver.toxicity.csv")
+dune <- read_csv("../data/dune.csv")
+dune.env <- read_csv("../data/dune.env.csv")
+
+
+```
+
+### Background
+
+For the first part of this homework, we will be using a dataset examining the gene expression that occurs under liver toxicity when rats are placed on four different doses of acetaminophen (50, 150, 1500, and 2000 mg/kg). There are 64 rats in this study, with 16 in each dosage treatment. The datafile is "liver.toxicity.csv". We will look at how the **Y** of gene expression data is influenced by the dosage treatment.  This data comes from a larger R package [looking at gene expression and PCA](https://mixomicsteam.github.io/Bookdown/pca.html#biological-question).  You can find it within `library(mixOmics)`, which is now stored in `library("BiocManager")` - [download it here](https://www.bioconductor.org/packages/release/bioc/html/mixOmics.html).   
+
+
+**Q1** Let's start by looking at the data.  You will notice that this dataset is extremely wide. So, let's look at the first 20 rows and the first 10 columns of the data. Describe what the data look like (what is in each row, column and cell).
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+liver[1:20, 1:6]
+
+## looks like each rat has its own row, and its own treatment/dose
+#   of acetomenaphen. And each column after that are genes, with
+#   their expression of that particular gene (not sure the units) 
+#   in each cell.
+
+```
+
+### PCA
+
+
+**Q2** Run a PCA on the data using `prcomp()`, and summarize the data using `summary()`.  Describe what this tells you. What does the standard deviation row tell you?  How much variance does the 1st, 2nd, and 6th principal component, or axis, describe?
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+liver.pca <- prcomp(liver[, -c(1:3)], center = TRUE, scale = TRUE)
+summary(liver.pca)
+
+# The summary(liver.pca) describes how much variance each PC axis 
+#   explains. There should be as many PC axes as there are columns 
+#   of data, however in this case there are so many columns that it
+#   seems likely that they only estimate 64 PC's because that's where
+#   the variation explained reaches 1, and each additional PC axis 
+#   only infintesimally explains more variation and so they are not
+#   included.
+
+# THis summary details three things.  In the first row it describes
+#   the standard deviation of the eigenvalue for each PC axis.
+#   Then in the second row it tells you the proportion of variation 
+#   each PC axis explains. And finally the third column explains
+#   the cumulative proportion explained up to that point.
+
+# PC1 describes 28% of the variation
+# PC2 describes 14.9 % of the variation
+# PC6 describes 3.9% of the variation.
+
+```
+
+
+**Q3** Plot this PCA so we can get a better idea of what is going on. Color each point by its dosage group to help visualize patterns. Does it appear that the dosage of acetomenaphin fed to a rat alters its gene expression overall?  I would suggest using `var.axes = FALSE` to remove the arrows on the plot that represent each column because there are too many columns and the figure will be very cluttered. 
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+ggbiplot(liver.pca, ellipse = TRUE, groups = as.factor(liver$Dose.Group), 
+         var.axes = FALSE)+
+  theme_bw()+
+  theme(text = element_text(size=12))
+
+# Yes, it appears that the dosage of acetomenaphin given to a rat
+#   differentially affects its gene expression. Higher doses have more
+#   similar and more variable gene expression, and lower doses have 
+#   more similar, and less variable gene expression.
+
+```
+
+
+**Q4** Let's look at the loading scores for the first 10 genes and the first 4 PC axes. When considering gene A_43_P2128, which PC axis does it load most strongly on (of the first 4 axes)?  What is the direction of this loading? 
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+liver.pca$rotation[1:10,1:4]
+
+# A_43_P2128 loads most strongly on PC4, and the direction
+#   is negative.
+
+```
+
+
+**Q5** If you wanted to look at the actual PC values for each axis on each rat, you need to pull out the x values from your pca object (the vale of the rotated data - nonstandardized). Do this for the first 10 rows and the first 4 columns. Describe where rat 3 falls on the PC axes.
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+liver.pca$x[1:10,1:4]
+
+# Rat 3 has these values on the PC axes
+# PC1: 13.451222 
+# PC2: -26.326953 
+# PC3: -3.0316212 
+# PC4: 11.2340014
+
+```
+
+**Q6** Now try plotting the PCA data and group the points by the Treatment Groups.  What hypothesis would you draw from the relationships that stand out from this figure?
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+ggbiplot(liver.pca, ellipse = TRUE, groups = as.factor(liver$Treatment.Group), 
+         var.axes = FALSE)+
+  theme_bw()+
+  theme(text = element_text(size=12))
+
+# Depending on how often you take each dose (every 6,18,24, or 48 hours), 
+#   you get a different  gene expression, so you need to take time 
+#   into consideraiton when dosing with acetomenaphin.
+
+```
+
+## Sand Dune Data
+
+### Background
+
+Now we will switch gears a bit and look at a datset of plant species cover (aerial cover of each species within each plot) on dune environments. We have cover data from 20 plots. We also have information on how each site was managed, used (hayfield, haypasture, pasture), it's soil moisture, and it's manuer application levels. Our plant species cover can be found in "dune.csv", while our environmental variables can be found in "dune.env.csv".
+
+
+### NMDS
+
+
+**Q7** Run an nMDS model on this dune data, with k=2, and Bray Curtis distance.  Select a standardization and justify your results. Plot your nMDS results, and use hulls to define the different Use types of each plant community.
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+dune.d <- decostand(dune, "total")
+
+dune.mds2 <- metaMDS(dune.d, k = 2, distance = "bray", autotransform = F, 
+                     expand = F)
+
+plot(dune.mds2, disp = "sites")
+ordihull(dune.mds2, dune.env$Use, label = T)
+
+
+# I decided to use a standardization by site total because I care about
+#   both abundant and rare species and it's common in the field. I 
+#   also chose to plot the species names because I was interested in 
+#   where they were on the figure and which species were clustering
+#   together.  Also, the hulls make it look like there MAY be differences
+#   among Use groups.
+
+```
+
+
+### Hypothesis Testing
+
+
+**Q8** With the same Bray Curtis distance, run a permutational ANOVA with `adonis()` to find out if soil moisture ("Moisture") and manure application ("Manure") is a predictor of species composition within these plots.  What do you find?
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+adonis(dune.d ~ Moisture + Manure, data = dune.env)
+adonis(dune.d ~ Manure + Moisture, data = dune.env)
+
+#  Yes, both moisture and manure significantly predict species 
+#   composition within these plots.  Because order matters here
+#   for my own confidence, I am testing the models with the
+#   predictor variables in both orders. It doesn't seem to 
+#   matter.
+
+```
+
+
+**Q9** What happens if you keep moisture and manure as predictor variables, but add "Use" as a grouping variable?  What do you find now?
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+adonis(dune.d ~ Moisture + Manure, data = dune.env, strata = dune.env$Use)
+adonis(dune.d ~ Manure + Moisture, data = dune.env, strata = dune.env$Use)
+
+#  When you add the blocking factor, you do not see a difference.
+#   Both moisture and manure are signficant.
+
+```
+
+
+**Q10** What happens if you keep moisture and manure as predictor variables, but add "Use" as a grouping variable?  What do you find now?
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+adonis(dune.d ~ Moisture + Manure, data = dune.env, strata = dune.env$Use)
+adonis(dune.d ~ Manure + Moisture, data = dune.env, strata = dune.env$Use)
+
+#  When you add the blocking factor, you do not see a difference.
+#   Both moisture and manure are signficant.
+
+```
+
+**Q11** Finally, test the hypothesis that there is a difference between dispersion among Use groups in this plant community data (see figure from Q7 to look at hulls of Use groups).
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+dune.dist <- vegdist(dune.d, method = "bray")
+dune.bd <-betadisper(dune.dist, dune.env$Use)
+dune.bd
+
+anova(dune.bd)
+
+
+# Here we fail to reject the null hypothesis that there is no
+#   difference in community dispersion among Use groups in the
+#   dune data.
+```
+
+
+
