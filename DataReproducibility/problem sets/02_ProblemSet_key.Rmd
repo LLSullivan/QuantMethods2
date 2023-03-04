@@ -1,0 +1,309 @@
+
+---
+title: "Problem Set 02 - Answer Key"
+author: Due Feb 4, 2022
+output: 
+  html_document:
+    float: yes
+    css: "style.css"    
+editor_options: 
+  chunk_output_type: console
+mainfont: Arial
+mathfont: Arial
+fontsize: 12pt
+subtitle: Lauren Sullivan, BIO_SC 8002_01
+---
+
+
+
+
+
+# {.tabset .tabset-pills .tabset-fade}
+
+## Instructions
+
+### Data Cleaning
+
+__Your goal for this week is to tidy up the dataset "pokemon_dat.csv".  Follow the set of questions below to clean it up appropriately. You may work in your groups (assigned in class) to complete this assignment, but turn in your own work.  This should all be done in R.__
+
+
+## Setup
+
+### Setup
+
+Set up your code so you have an appropriate preamble that explains the work, clears the console, sets your working directory, and loads in the data.
+
+
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+###############
+#
+# 02 PROBLEM SET
+# 
+# DUE:        February 54, 2022
+# 
+# CREATED BY: Lauren Sullivan
+# FILES:      "pokemon_dat.csv""
+#
+###############
+
+########### setup
+rm(list=ls())
+
+
+library(tidyverse)
+
+########### data
+pokedat <- read_csv("../data/pokemon_dat.csv")
+
+
+
+
+```
+
+## Question 1
+
+### Question 1
+
+
+You are an intrepid data scientist, and when you read in your hard-earned datafile "pokemon_dat.csv", to your surprise you find there are some serious problems with the structure of the data. Most importantly you realize that the column Name is not entirely complete. Fill in the missing entries in the dataset so the empty cells match the name of the Pokemon above it.
+
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+pokedat[1:6, 1:8]
+
+pokedat_1 <- pokedat %>% fill(Name)
+
+pokedat_1[1:6, 1:8]
+
+```
+
+
+
+## Question 2
+
+### Question 2
+
+As an esteemed Pokemon trainer, you also know that every tidy pokedex dataset should not have two rows per Pokemon (by Name) when most of that data is repeated between those two rows. How can you clean this up?
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+# The only columns that differs between the sets of 2 rows per Pokemon are
+#   "Special_Move" and "Special_Move_Power". So spread those two columns -
+#   (Special_Move is the variable, and Special_Move_Power is the value)
+
+pokedat_2 <- pokedat_1 %>%
+                pivot_wider(names_from = "Special_Move", values_from = "Special_Move_Power")
+head(pokedat_2)
+
+
+
+```
+
+## Question 3
+
+### Question 3
+
+
+
+There are a _lot_ of Pokemon in your pokedex dataset and it can be difficult to remember the names of all of them.  Instead of scrolling all the way through your dex, how can you easily find the names of the last three Pokemon you have (i.e. the Pokemon with the highest number)? What are they?
+
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+tail(pokedat_2)
+
+# or try this if you want to be able to read the full names
+tail(pokedat_2[[2]])
+
+
+```
+
+## Question 4
+
+### Question 4
+
+After some thought, you realize it would be easier to have this data in more of a long form, than a wide form. So you decide to make a new variable named "Stats_type" and combine columns: HP, Attack, Defense and Speed into this new column. How would you do that? What would be the value that goes into this column?
+
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+pokedat_3 <- pokedat_2 %>%
+              pivot_longer(c("HP", "Attack", "Defense", "Speed"), names_to = "Stats_type",
+                     values_to = "Stats_value")
+pokedat_3[1:9, c(1:2,22:23)]
+
+```
+
+
+## Question 5
+
+### Question 5
+
+You also realize you will likely want to create a scaling relationship across all your Pokemon species to better understand their competitive ability pound for pound.  Unfortuately, the height and weight data are in one column. How should you split this column up so you can explore this relationship?
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+pokedat_4 <- pokedat_3 %>%
+                separate(Height_and_Weight_stats, into =
+                         c("Height", "Weight"), sep = ":",
+                         convert = TRUE)
+head(pokedat_4)
+
+# Did you remember to convert back to dbl?? Otherwise your heights and
+#   weights will be characters.
+
+# Here's that relationship for fun, and on the log-log scale to please
+#   the true scaling folks (biogeographers).
+
+ggplot(pokedat_4, aes(x = log(Height), y = log(Weight)))+
+  geom_point()+
+  geom_smooth(method = 'lm', se = TRUE)+
+  theme_bw()
+
+```
+
+
+## Question 6
+
+### Question 6
+
+Many Pokemon trainers actually believe that Pokemon catch rate is an important variable. How would you tidy this data to meet this standard? What is the size of the resulting dataset?  Make sure you have implicit `NA's`
+
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+pokedat_5 <- pokedat_4 %>%
+              pivot_longer(c("Green","Red","Blue","White","Brown","Yellow","Purple",
+                     "Pink","Grey","Black"), names_to = "Color", values_to ="Catch_Rate",
+                     values_drop_na = TRUE)
+
+#OR
+
+pokedat_5 <- pokedat_4 %>%
+              pivot_longer(names_to = "Color", values_to = "Catch_Rate", c(-Number, -Name,
+                     -Type_1, -Type_2, -Generation, -Pr_Male, -Height,
+                     -Weight, -Body_Style, -isLegendary, -Special_Attack,
+                     -Special_Defense, -Stats_type, -Stats_value),
+                      values_drop_na = TRUE)
+
+str(pokedat_5)
+# The dataset has 2884 observations, 16 variables.
+
+# FYI this tidying isn't 100% required, but makes your dataset cleaner
+#   to make your NA's implicit bc there is no such thing as a Red
+#   Bulbasaur for example.
+```
+
+## Question 7
+
+### Question 7
+
+Sometimes you need to focus on capturing certain genders of Pokemon in order to breed them. In these cases you need to modify your data so you are only looking at what is relevant when heading to the field to captures males or females. Both `unite()` and `separate()` have a remove argument. What happens if you set it to TRUE?  Why would you want to do this?
+
+Here there's no code to create, just explore these functions.
+
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+?unite()
+?separate()
+
+# REMOVE = TRUE removes an input columnn from the output dataframe.
+#   This can help you keep data tidy bc when you are uniting or
+#   separating two datasets you may not care if some columns in
+#   one of your original data frames is in the final dataframe,
+#   so just remove it! (like here, you only need Pokemon name and
+#   Pr_male so you have an idea of how long you need to look for either
+#   gender.)
+
+```
+
+## Question 8
+
+### Question 8
+
+Some pokemon do not have a second type (Type_2). Sometimes you only care about Pokemon with two Types. Make these Type_2 missing values implict. What are the full dimensions of the resulting dataset? How many species of Pokemon are in this resulting dataset?  Demonstrate how you know there are no `NAs` in the Type2 column.
+
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+pokedat_6 <- pokedat_5 %>%
+              pivot_wider(names_from = isLegendary, values_from = Type_2) %>%
+              pivot_longer(names_to = "isLegendary", values_to = "Type_2", "FALSE":"TRUE",  
+                           values_drop_na = TRUE)
+
+
+str(pokedat_6)
+# The dataset has 1400 obs. of  16 variables
+
+length(unique(pokedat_6$Name))
+# There are 350 Pokemon with only two Types
+
+list(unique(pokedat_5$Type_2))
+# There are NAs in this list of unique Type 2's before the transformation
+
+list(unique(pokedat_6$Type_2))
+# There are no NAs in this list of unique Type 2's after the transformation
+
+```
+
+
+## Question 9
+
+### Question 9
+
+With such a big pokedex sometimes you need to be able to search for certain rows or columns within the data. Can you tell me what Pokemon number's 100-110 are?  What are their HP stats?  To do this, first pivot the dataset wider to make sure you have each Pokemon as a single row.  To make it easier, you might want to go back to the dataset you used before you got rid of the Pokemon with a single Type.
+
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+pokedat_7 <- pokedat_5 %>%
+              pivot_wider(names_from = Stats_type, values_from = Stats_value) 
+
+pokedat_7[100:110, c(1:2, 15)]
+
+```
+
+
+## Question 10
+
+### Question 10
+
+Sometimes rival Pokemon trainers will brag about the number of Pokemon they have from each generation. Since you clearly have more Pokemon than they do, use 3 different methods to count your Pokemon by Generation so you can show them up.  How many total pokemon do you have??
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+pokedat_7[,4]
+
+pokedat_7 %>% .$Generation
+
+pokedat_7 %>% .[["Generation"]]
+
+pokedat_7[["Generation"]]
+
+pokedat_7$Generation
+
+
+str(pokedat_7)
+#721 Pokemon
+
+```
+
+

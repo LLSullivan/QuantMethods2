@@ -1,0 +1,166 @@
+
+---
+title: "Problem Set 02"
+author: Due Feb 4, 2022
+output: 
+  html_document:
+    float: yes
+    css: "style.css"    
+editor_options: 
+  chunk_output_type: console
+mainfont: Arial
+mathfont: Arial
+fontsize: 12pt
+subtitle: Lauren Sullivan, BIO_SC 8002_01
+---
+
+
+
+
+
+# {.tabset .tabset-pills .tabset-fade}
+
+## Instructions
+
+### Data Cleaning
+
+__Your goal for this week is to tidy up the dataset "pokemon_dat.csv".  Follow the set of questions below to clean it up appropriately. You may work in your groups (assigned in class) to complete this assignment, but turn in your own work.  This should all be done in R.__
+
+
+## Setup
+
+### Setup
+
+Set up your code so you have an appropriate preamble that explains the work, clears the console, sets your working directory, and loads in the data.
+
+
+
+```{r}
+#Enter your code and answers here
+```
+
+
+## Question 1
+
+### Question 1
+
+
+You are an intrepid data scientist, and when you read in your hard-earned datafile "pokemon_dat.csv", to your surprise you find there are some serious problems with the structure of the data. Most importantly you realize that the column Name is not entirely complete. Fill in the missing entries in the dataset so the empty cells match the name of the Pokemon above it.
+
+```{r}
+#Enter your code and answers here
+```
+
+
+## Question 2
+
+### Question 2
+
+As an esteemed Pokemon trainer, you also know that every tidy pokedex dataset should not have two rows per Pokemon (by Name) when most of that data is repeated between those two rows. How can you clean this up?
+
+```{r}
+#Enter your code and answers here
+```
+
+## Question 3
+
+### Question 3
+
+There are a _lot_ of Pokemon in your pokedex dataset and it can be difficult to remember the names of all of them.  Instead of scrolling all the way through your dex, how can you easily find the names of the last three Pokemon you have (i.e. the Pokemon with the highest number)? What are they?
+
+
+```{r}
+#Enter your code and answers here
+```
+
+
+## Question 4
+
+### Question 4
+
+After some thought, you realize it would be easier to have this data in more of a long form, than a wide form. So you decide to make a new variable named "Stats_type" and combine columns: HP, Attack, Defense and Speed into this new column. How would you do that? What would be the value that goes into this column?
+
+
+```{r}
+#Enter your code and answers here
+```
+
+
+
+## Question 5
+
+### Question 5
+
+You also realize you will likely want to create a scaling relationship across all your Pokemon species to better understand their competitive ability pound for pound.  Unfortuately, the height and weight data are in one column. How should you split this column up so you can explore this relationship?
+
+
+```{r}
+#Enter your code and answers here
+```
+
+
+
+## Question 6
+
+### Question 6
+
+Many Pokemon trainers actually believe that Pokemon catch rate is an important variable. How would you tidy this data to meet this standard? What is the size of the resulting dataset?  Make sure you have implicit `NA's`
+
+
+```{r}
+#Enter your code and answers here
+```
+
+
+## Question 7
+
+### Question 7
+
+Sometimes you need to focus on capturing certain genders of Pokemon in order to breed them. In these cases you need to modify your data so you are only looking at what is relevant when heading to the field to captures males or females. Both `unite()` and `separate()` have a remove argument. What happens if you set it to TRUE?  Why would you want to do this?
+
+Here you don't need to create code, just explore the functions.
+
+```{r}
+#Enter your code and answers here
+```
+
+## Question 8
+
+### Question 8
+
+Some pokemon do not have a second type (Type_2). Sometimes you only care about Pokemon with two Types. Make these Type_2 missing values implict. What are the full dimensions of the resulting dataset? How many species of Pokemon are in this resulting dataset?  Demonstrate how you know there are no `NAs` in the Type2 column.
+
+
+```{r}
+#Enter your code and answers here
+```
+
+
+
+## Question 9
+
+### Question 9
+
+With such a big pokedex sometimes you need to be able to search for certain rows or columns within the data. Can you tell me what Pokemon number's 100-110 are?  What are their HP stats?  To do this, first pivot the dataset wider to make sure you have each Pokemon as a single row.  To make it easier, you might want to go back to the dataset you used before you got rid of the Pokemon with a single Type.
+
+
+
+```{r}
+#Enter your code and answers here
+```
+
+
+
+## Question 10
+
+### Question 10
+
+Sometimes rival Pokemon trainers will brag about the number of Pokemon they have from each generation. Since you clearly have more Pokemon than they do, use 3 different methods to count your Pokemon by Generation so you can show them up.  How many total pokemon do you have??
+
+
+```{r}
+#Enter your code and answers here
+```
+
+
+

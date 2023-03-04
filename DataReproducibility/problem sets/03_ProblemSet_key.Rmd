@@ -1,0 +1,310 @@
+
+---
+title: "Problem Set 03 - Answer Key"
+author: Due Feb 11, 2022
+output: 
+  html_document:
+    float: yes
+    css: "style.css"    
+editor_options: 
+  chunk_output_type: console
+mainfont: Arial
+mathfont: Arial
+fontsize: 12pt
+subtitle: Lauren Sullivan, BIO_SC 8002_01
+---
+
+
+# {.tabset .tabset-pills .tabset-fade}
+
+## Instructions
+
+### Data Transformation
+__The problem set this week involves transforming and exploring a new dataset on the shiny rates of Pokemon in Pokemon Go.  For those not familiar with the game, Pokemon appear infrequently as their shiny version, which is a different color. For this week we have a dataset of shiny rates for Pokemon. We will be using this dataset in combination with the dataset from last week to perform some EDA.__
+
+
+## Setup
+
+### Setup
+
+Set up your code so you have an appropriate preamble that explains the work, clears the console, sets your working directory, and loads in the data.
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+###############
+#
+# 03 PROBLEM SET
+# 
+# DUE:        February 11, 2022
+# 
+# CREATED BY: Lauren Sullivan
+# FILES:      "pokemon_dat.csv"
+#             "shiny_rates.csv"
+#
+###############
+
+
+########### setup
+rm(list=ls())
+
+library(tidyverse)
+
+########### data
+pokedat <- read_csv("../data/pokemon_tidy.csv")
+shiny <- read_csv("../data/shiny_rates.csv")
+
+```
+
+
+## Question 1
+
+### Question 1
+__We will first be working with the "shiny_rates.csv" dataset, that gives the shiny rates of all Pokemon that can be caught in the wild.__
+
+**Q1a**
+Read in your data and summarize all variables.
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+shiny
+summary(shiny)
+
+```
+
+**Q1b**
+Before we can start working with the shiny rate data we need to transform the column "Shiny_Rate" into something useable, as it was entered as a fraction, but this is currently a character. Create a new variable in your shiny dataset that has shiny rate values as numbers.
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+shiny_1b <- shiny %>% 
+              separate(Shiny_Rate, into = c("num", "denom"), sep = "/", 
+                       convert = TRUE) %>%                  
+              mutate(Rate = num / denom)
+shiny_1b
+
+```
+
+
+**Q1c** 
+What does the distribution of shiny rates look like?  Are there any issues you see?  How would you interpret this data distribution in terms of what it actually means for shiny rates in the wild?
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+ggplot(shiny_1b)+
+  geom_histogram(aes(x = Rate), binwidth = 0.0005)+
+  theme_bw()
+
+#The data is very right skewed, which means there are a lot of pokemon 
+#   with vary rare shiny forms (e.g. very low shiny rates), but there 
+#   are just a few that have decently high shiny rates.
+
+```
+
+
+**Q1d**
+Is there a relationship between shiny rate and the number of pokemon caught? I would suggest transforming your data because the values are on such different scales. How do you interpret your results?
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+ggplot(shiny_1b, aes(x = log(Rate), y = log(Number_Caught)))+
+  geom_point()+
+  geom_smooth(method = lm, se = TRUE)+
+  theme_bw()
+
+#When you log transform both variables, you see a negative relationship
+#   between shiny rate and the number of pokemon caught. To me, this 
+#   indicates that the pokemon are not evenly sampled. If shiny rate did 
+#   not depend on the number of Pokemon of that species caught, then 
+#   you would see no trend.  However what we see is that Pokemon with 
+#   the highest shiny rates are also caught the least often, and vice versa
+#   I believe more Pokemon of each species need to be caught (especially
+#   those with currently high shiny rates) to see if this relationship 
+#   still holds.
+
+```
+
+
+**Q1e**
+What Pokemon have the highest shiny rates?  The lowest?  What is Krabby's shiny rate?
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+shiny_1d <- shiny_1b %>%
+              arrange(Rate)
+
+#Lowest Shiny Rate
+head(shiny_1d)
+
+#Highest Shiny Rate
+tail(shiny_1d)
+
+#Krabby's Shiny Rate is 0.004
+shiny_1d %>% filter(Pokemon_Name == "Krabby")
+
+```
+
+
+
+## Question 2
+
+### Question 2
+
+__Now that we understand more about each Pokemon's shiny rate, let's combine this knowledge with our data from last week on Pokemon types and stats.  We will start by exploring `pokemon_dat_cleaned.csv`.__
+
+
+**Q2a**
+Now read in the "pokemon_dat_cleaned.csv" dataset - this is the cleaned version we created last week. Again, summarize all variables.
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+pokedat
+summary(pokedat)
+```
+
+
+
+**Q2b**
+Using `geom_boxplot()`, graph the range of pokemon mass by their `Type_1`.
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+ggplot(pokedat)+
+  geom_boxplot(aes(x = Type_1, y = Weight_kg))+
+  theme_bw()
+
+```
+
+
+**Q2c**
+
+You will notice your graph is not very satisfying. One problem is the `Type_1` lables are all overlapping.  How would you fix this?  Also, order the x-axis by the median values so you can visualize the pattern better, and re-label the axes so they are understandable.
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+ggplot(pokedat)+
+  geom_boxplot(aes(x = reorder(Type_1, Weight_kg, FUN = median),
+                   y = Weight_kg))+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs(x = "Pokemon Type 1", y = "Weight (kg)")
+
+```
+
+
+**Q2d**
+
+Boxplots can be useful, but it is also sometimes great to look at the actual data points. Re-create this graph using data points instead of the boxplots. Make sure we can see all the points within each category as they will overlap significantly.
+
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+ggplot(pokedat)+
+  geom_jitter(aes(x = Type_1, y = Weight_kg), width = 0.1, color = "gray20",
+              alpha = 0.3)+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs(x = "Pokemon Type 1", y = "Weight (kg)")
+
+```
+
+
+
+
+**Q2e**
+
+Now explore the distribution of `Weight_kg` across Pokemon with different `Type_1`.
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+ggplot(pokedat)+
+  geom_freqpoly(aes(x = Weight_kg, color = Type_1), alpha = 0.5)+
+  theme_bw()+
+  labs(x = "Weight (kg)")
+
+#OR
+
+ggplot(pokedat)+
+  geom_density(aes(x = Weight_kg, fill = Type_1), alpha = 0.35)+
+  theme_bw()+
+  labs(x = "Weight (kg)")
+
+```
+
+
+## Question 3
+
+### Question 3
+
+__Ok, now it is time to merge the two datasets together and see what we can learn about Pokemon shiny rates and their stats.__
+
+**Q3a**
+Merge the two datasets ("pokemon_dat.csv" and your cleaned version of "shiny_rates.csv") so you have a resulting dataset called "pokemon_merged" that includes information from both tables, but only Pokemon that also have a shiny version that can be caught in the wild. Arrange the dataset by the Shiny Rate, highest to lowest.  What is the key column here?
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+pokemon_merged <- pokedat %>%
+                    left_join(shiny_1d,  c("Name" = "Pokemon_Name")) %>%
+                    filter(Rate != "NA") %>%
+                    arrange(desc(Rate))
+
+pokemon_merged[, c(1:4, 19:20)]
+
+# The key column is "Name" in "pokemon_dat_cleaned.csv", and "Pokemon_Name"
+#   in "shiny_rates.csv".
+
+```
+
+
+**Q3b**
+Is there a relationship between any Pokemon stat (`HP`, `Attack`, `Defense`, or `Speed`) and its shiny rate? Describe your results and why you came do that decision.  How should you visualize this?  I'm looking for only one figure that displays all of this information.
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+pokemon_merged_3b <- pokemon_merged %>%
+                      gather("HP", "Attack", "Defense", "Speed",
+                             key = "Stat_Type", value = "Stat_Value")
+
+ggplot(pokemon_merged_3b, aes(x = log(Stat_Value), y = Rate))+
+  geom_point()+
+  geom_smooth(method = "lm", se = TRUE)+
+  facet_wrap(~Stat_Type, nrow = 2, scales = "free")+
+  theme_bw()
+
+
+# Looks like there is not a relationship between a Pokemon's stats
+#   and its shiny rate, except for maybe defense vs shiny rate has
+#   a positive trend. But I'm not convinced just by this graph.
+
+
+```
+
+
+
+**Q3c**
+What is a quick way to get a dataset for only the pokemon stats that do not have shiny rates in the wild?
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+pokemon_merged <- pokedat %>%
+                    anti_join(shiny_1d,  c("Name" = "Pokemon_Name"))
+
+pokemon_merged
+
+# Note here that you do not have any shiny rate data in the new table.
+
+```
+

@@ -1,0 +1,182 @@
+
+---
+title: "Problem Set 03 - Answer Key"
+author: Due Feb 11, 2022
+output: 
+  html_document:
+    float: yes
+    css: "style.css"    
+editor_options: 
+  chunk_output_type: console
+mainfont: Arial
+mathfont: Arial
+fontsize: 12pt
+subtitle: Lauren Sullivan, BIO_SC 8002_01
+---
+
+
+# {.tabset .tabset-pills .tabset-fade}
+
+## Instructions
+
+### Data Transformation
+__The problem set this week involves transforming and exploring a new dataset on the shiny rates of Pokemon in Pokemon Go.  For those not familiar with the game, Pokemon appear infrequently as their shiny version, which is a different color. For this week we have a dataset of shiny rates for Pokemon. We will be using this dataset in combination with the dataset from last week to perform some EDA.__
+
+
+## Setup
+
+### Setup
+
+Set up your code so you have an appropriate preamble that explains the work, clears the console, sets your working directory, and loads in the data.
+
+
+```{r}
+
+```
+
+
+## Question 1
+
+### Question 1
+__We will first be working with the "shiny_rates.csv" dataset, that gives the shiny rates of all Pokemon that can be caught in the wild.__
+
+**Q1a**
+Read in your data and summarize all variables.
+
+
+```{r}
+
+```
+
+
+**Q1b**
+Before we can start working with the shiny rate data we need to transform the column "Shiny_Rate" into something useable, as it was entered as a fraction, but this is currently a character. Create a new variable in your shiny dataset that has shiny rate values as numbers.
+
+
+```{r}
+
+```
+
+
+
+**Q1c** 
+What does the distribution of shiny rates look like?  Are there any issues you see?  How would you interpret this data distribution in terms of what it actually means for shiny rates in the wild?
+
+
+```{r}
+
+```
+
+
+**Q1d**
+Is there a relationship between shiny rate and the number of pokemon caught? I would suggest transforming your data because the values are on such different scales. How do you interpret your results?
+
+
+```{r}
+
+```
+
+
+
+**Q1e**
+What Pokemon have the highest shiny rates?  The lowest?  What is Krabby's shiny rate?
+
+
+```{r}
+
+```
+
+
+
+
+## Question 2
+
+### Question 2
+
+__Now that we understand more about each Pokemon's shiny rate, let's combine this knowledge with our data from last week on Pokemon types and stats.  We will start by exploring `pokemon_dat_cleaned.csv`.__
+
+
+**Q2a**
+Now read in the "pokemon_dat_cleaned.csv" dataset - this is the cleaned version we created last week. Again, summarize all variables.
+
+```{r}
+
+```
+
+
+
+**Q2b**
+Using `geom_boxplot()`, graph the range of pokemon mass by their `Type_1`.
+
+
+```{r}
+
+```
+
+
+**Q2c**
+
+You will notice your graph is not very satisfying. One problem is the `Type_1` lables are all overlapping.  How would you fix this?  Also, order the x-axis by the median values so you can visualize the pattern better, and re-label the axes so they are understandable.
+
+```{r}
+
+```
+
+
+**Q2d**
+
+Boxplots can be useful, but it is also sometimes great to look at the actual data points. Re-create this graph using data points instead of the boxplots. Make sure we can see all the points within each category as they will overlap significantly.
+
+
+```{r}
+
+```
+
+
+
+
+**Q2e**
+
+Now explore the distribution of `Weight_kg` across Pokemon with different `Type_1`.
+
+```{r}
+
+```
+
+
+
+## Question 3
+
+### Question 3
+
+__Ok, now it is time to merge the two datasets together and see what we can learn about Pokemon shiny rates and their stats.__
+
+**Q3a**
+Merge the two datasets ("pokemon_dat.csv" and your cleaned version of "shiny_rates.csv") so you have a resulting dataset called "pokemon_merged" that includes information from both tables, but only Pokemon that also have a shiny version that can be caught in the wild. Arrange the dataset by the Shiny Rate, highest to lowest.  What is the key column here?
+
+
+```{r}
+
+```
+
+
+
+**Q3b**
+Is there a relationship between any Pokemon stat (`HP`, `Attack`, `Defense`, or `Speed`) and its shiny rate? Describe your results and why you came do that decision.  How should you visualize this?  I'm looking for only one figure that displays all of this information.
+
+
+```{r}
+
+```
+
+
+
+
+**Q3c**
+What is a quick way to get a dataset for only the pokemon stats that do not have shiny rates in the wild?
+
+```{r}
+
+```
+
+
