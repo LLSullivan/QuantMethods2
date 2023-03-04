@@ -26,4 +26,4 @@ Here I have uploaded all of the required materials for 3 modules in the Advanced
 
 
 
-All associated lecture recordings can be found at my Youtube channel: https://www.youtube.com/channel/UC7Y-iPwSWrtg2DV7Ye4mbiA
+All associated lecture recordings can be found at my Youtube channel: [https://www.youtube.com/channel/UC7Y-iPwSWrtg2DV7Ye4mbiA](https://www.youtube.com/channel/UC7Y-iPwSWrtg2DV7Ye4mbiA)
