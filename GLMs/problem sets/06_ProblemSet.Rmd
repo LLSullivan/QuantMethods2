@@ -1,0 +1,146 @@
+
+---
+title: "Problem Set 06"
+author: Due Mar 25, 2022
+output: 
+  html_document:
+    float: yes
+    css: "style.css"    
+editor_options: 
+  chunk_output_type: console
+mainfont: Arial
+mathfont: Arial
+fontsize: 12pt
+subtitle: Lauren Sullivan, BIO_SC 8002_01
+---
+
+
+# {.tabset .tabset-pills .tabset-fade}
+
+## Urbanization and spiders
+
+### Background
+
+We will be examining data from: Dahirel et al. 2019. Urbanization-driven changes in web building and body size in an orb web spider. Journal of Animal Ecology. 88:79-91. Here are links to the [paper](https://besjournals.onlinelibrary.wiley.com/doi/epdf/10.1111/1365-2656.12909) and  [data](https://datadryad.org/stash/dataset/doi:10.5061/dryad.j886dg0). 
+
+*Note: I would encourage you to check out the format with which they provided their data and code.  These authors did a particularly good job as they provided data, code and metadata (this is not as common as I'd like - now that I'm scrounging Dryad for datasets for our class.) These authors store their data in a way that I encourage, which is multiple files for different types of data that can be joined through tidying data before analysis.  So this is a great example!  I also fully realize you could look at their code and use it to inform your homework answers, but I encourage you to challenge yourself and try it without looking at the code and instead working in your groups. I won't be asking you for the exact same analyses they do in their paper, so try to answer the homework questions without looking, and then check out their code later (it's beatifully commented).*
+
+In this paper, the authors examine orb weaver spiders (check them out [here](https://en.wikipedia.org/wiki/Araneus_diadematus)) and how their body size and web building changes with urbanization. Orb weaver spiders are particularly interesting because their behavior can be understood by measuring their web's characteristics.  For example, when spiders experience low prey capture, they will increase the capture area of their web to make sure they catch something. Alternatively, they will build smaller webs with finer structure to maximize prey retention when prey density is high. So tracking web size and construction can allow for an understanding of the resource availability a spider is facing. We will be using their data to practice mixed effects models that follow both normal and non-normal distributions.
+
+
+### Setup
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+###############
+#
+# 06 PROBLEM SET
+# 
+# DUE:        March 25, 2022
+# 
+# CREATED BY: Lauren Sullivan
+# FILES:      "population_densities.csv"
+#             "urbanization.csv"
+#             "spiders.csv"
+#
+###############
+
+
+########### setup
+
+```
+
+
+
+**Q1** Look at the three datasets the authors used and how they are organized. Using the metadata, please describe what each dataset is telling you, and how they are organized.  Why is it helpful to have the data organized in this way, as three separate files? What do you like about the presentation of their work?  What would you change?
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+```
+
+## Data Visualization
+
+### Data Visualization
+
+**Q2** First, let's explore the range of population density and urbanization across the research sites. Merge "population_density.csv" and "urbanization.csv" together and create two figures to explore how the "percent_buildings_site" varies across scale of urbanization. So graph the "percent_buildings_site" as a function of larger scale urbanization ("landscape_urban") and smaller scale urbanization ("local_urbanzation"). Make sure your x axis is ordered from low to high urban. What do you see from these figures?
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+```
+
+**Q3**  Now let's explore the data by creating histograms. Use your merged data to explore the distribution of the data for "Naraneus": number of adult female Araneus diadematus spiders caught per 0.2*0.2 km site. Then use the "spiders.csv" datset to explore "EfSurface" - area of the web capture zone (cm2), and "CTsize" - spider cephalothorax width (cm).  What type of mixed model (lmer or glmer) should you use for each variable and why? What distribution does the data use?  If there are multiple possibilities for a single variable, what are there?
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+
+```
+
+## Mized Effects Models
+
+### Mixed Effects Models
+
+**Q4** Let's start by exploring the patterns in the spider abundance data (Naraneus). We will create a mixed effects model to understand how urbanization at the local and landscape scale affect the number of Naraneus spiders. But first let's consider the random effects.  What would you use for your random effects and why?
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+```
+
+**Q5** Create a mixed effects model that explores: Naraneus $\sim$ landscape_urban + local_urban + random effects. We determined in question 2 that there are differences in the percent buildings at these scales, so perhaps these categorical variables will be enough to capture those trends. Summarize the results, and include in your summary a discussion of the variance components.
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+```
+
+**Q6** Create a figure that demonstrates your results.
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+```
+
+
+**Q7** Next, let's look at the area of the web capture (EfSurface) for spiders in these landscapes. Based on our thoughts from question 3, the distribution of the data is such that it is unclear if we should analyze the data using a `lmer()` or a `glmer()`. Run both models with your dependent variable as EfSurface, your independent variables as landscape_urban + local_urban, and a random effect for plot. Compare your model outputs. Which model describes the data better? Describe the results of the best fitting model.  Plot a figure to represent this.
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+
+```
+
+### Posthoc Pairwise Comparisons 
+
+Even though we know that local urbanization affects web surface area because our `Anova()` summary of our model tells us it's significant, we don't know which treatments are actually different from each other.  So we must do post-hoc comparisons. There are two ways to do this.  1) with `emmeans()` in the `library(emmeans)` and 2) with `glht()` in the `library(multcomp)`.  
+
+**Q8** Try both posthoc methods and determine which treatments are producing signficantly different web surface area relative to each other.  You will need to either read the `emmeans()` [documentation](https://www.rdocumentation.org/packages/emmeans/versions/1.7.2/topics/emmeans?), the `glht()` [documentation](https://www.rdocumentation.org/packages/multcomp/versions/1.4-18/topics/glht), or [this helpful website](https://biostats.w.uib.no/post-hoc-tests-multiple-comparisons-in-linear-mixed-effect-models/).  What did you find?
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+```
+
+
+**Q9** Finally, let's look at spider body size (CTsize) as a funciton of the same urbanization factors and random effects. What type of model would you use here.  If more than one seems to work, fit both and see which one is best using AIC. Describe your best fitting model results as well as the variance components. Don't forget to specify the sums of squares if your best fitting model is an `lmer()`.  Provide posthoc comparisons.
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+```
+
+**Q10** To confirm our results from question 8, plot spider body size (CTsize) against the local urbanization.
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+```
+
+
+**Q11** Based on our analyses here, what can you conclude about Naraneus spiders and urbanization?
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+
+```

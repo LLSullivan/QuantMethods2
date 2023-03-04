@@ -1,0 +1,139 @@
+
+
+---
+title: "Problem Set 04"
+author: Due Mar 4, 2022
+output: 
+  html_document:
+    float: yes
+    css: "style.css"    
+editor_options: 
+  chunk_output_type: console
+mainfont: Arial
+mathfont: Arial
+fontsize: 12pt
+subtitle: Lauren Sullivan, BIO_SC 8002_01
+---
+
+
+# {.tabset .tabset-pills .tabset-fade}
+
+## Instructions
+
+### Linear Models with Heights
+
+We will be looking at height and weight data for 12 year old kids on a factorial diet of high or low protein and high or low carbs ("height_weight.csv"). The average number of hours of TV each week for each child was also tracked. We will be exploring how these factors (diet and TV time) affect children's growth.
+
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+###############
+#
+# 04 PROBLEM SET
+# 
+# DUE:        March 4, 2022
+# 
+# CREATED BY: Lauren Sullivan
+# FILES:      "height_weight.csv"
+#            
+#
+###############
+
+
+########### setup
+rm(list=ls())
+
+library(tidyverse)
+
+########### data
+kid_dat <- read_csv("../data/height_weight.csv")
+
+```
+
+
+
+## Data Exploration
+
+### Data Exploration 
+
+**Q1** Create a figure that explores the relationship between a child's height and weight and taking sex into account. 
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+```
+
+## Linear Models
+
+### Linear Models
+
+**Q2** Implement a test that explores how a child's height is influenced by their weight and sex. How do you interpret these results? Based on your results, do you need to create a new figure to more accurately represent this data?  If so, please create one.
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+
+```
+
+
+**Q3** Another way to summarize data from statistical models is to use Anova(<model name>) from the `car` library, instead of summary(<model name>).  This method is great because you can designate which test statistic you will use, and which type of "sums of squares" you will use. [You can read the specifications here](https://rdrr.io/cran/car/man/Anova.html).  Install the `car` library and summarize your model for Q2 using an F statistic with type III sums of squares.  What are the differences between this and the model above?
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+```
+
+## Exploring Interactions
+
+### Exploring Interactions
+
+
+**Q4** Create two figures that explore how diet treatments affect children's height and weight regardless of sex. Here, you want `Height` and `Weight` to each be a dependent variable for a separate figure.
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+```
+
+
+
+**Q5** Create two models that test for the relationship of either a child's height or weight and how it is affected by the diet treatment regardless of sex. How do you interpret these results? If you see an interaction tell me if it's super-additive or sub-additive. *Hint:* To do this you will need to start by making indicator variables for if the diet has high carbs or protein, and these indicator variables should be factors.
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+```
+
+
+
+**Q6** What happens if you add sex into these factorial models?  What if you add them additively or as an interaction?  How do you interpret these results?
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+```
+
+
+
+**Q7** Plot how a child's weight is affected by the number of hours of TV watched, taking diet into account. 
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+```
+
+**Q8** Create a statistical test that determines how a child's weight is a function of their diet and number of hours of TV watched.  Plot the figure that best represents the outcomes of this model. Make this figure "publication ready".
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+```
+
+
+**Q9** Write a paragraph for both the statistical methods and results for questions 7 and 8 as if you were writing these for a publication.  This will be practice for your final module project with your own data. Remember to just stick to the model interpretations for the results section.  
+
+
+> 
+> 
+
+
+
+
+

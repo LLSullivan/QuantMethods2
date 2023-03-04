@@ -1,0 +1,280 @@
+
+
+---
+title: "Problem Set 04"
+author: Due Mar 4, 2022
+output: 
+  html_document:
+    float: yes
+    css: "style.css"    
+editor_options: 
+  chunk_output_type: console
+mainfont: Arial
+mathfont: Arial
+fontsize: 12pt
+subtitle: Lauren Sullivan, BIO_SC 8002_01
+---
+
+
+# {.tabset .tabset-pills .tabset-fade}
+
+## Instructions
+
+### Linear Models with Heights
+
+We will be looking at height and weight data for 12 year old kids on a factorial diet of high or low protein and high or low carbs ("height_weight.csv"). The average number of hours of TV each week for each child was also tracked. We will be exploring how these factors (diet and TV time) affect children's growth.
+
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+###############
+#
+# 04 PROBLEM SET
+# 
+# DUE:        March 4, 2022
+# 
+# CREATED BY: Lauren Sullivan
+# FILES:      "height_weight.csv"
+#            
+#
+###############
+
+
+########### setup
+rm(list=ls())
+
+library(tidyverse)
+
+########### data
+kid_dat <- read_csv("../data/height_weight.csv")
+
+```
+
+
+
+## Data Exploration
+
+### Data Exploration 
+
+**Q1** Create a figure that explores the relationship between a child's height and weight and taking sex into account. 
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+# 1) The relationship between a child's height and weight and taking 
+#       sex into account
+
+ggplot(kid_dat, aes(x = Height, y = Weight, color = Sex))+
+  geom_point()+
+  theme_bw()+
+  labs(x = "Height (cm)", y = "Weight (lbs)")
+
+
+```
+
+## Linear Models
+
+### Linear Models
+
+**Q2** Implement a test that explores how a child's height is influenced by their weight and sex. How do you interpret these results? Based on your results, do you need to create a new figure to more accurately represent this data?  If so, please create one.
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+test_2 <- lm(Height ~ Weight + Sex, data = kid_dat)
+summary(test_2)
+
+# There is a strong relationship between a child's height and weight,
+#     but this is not dependent on the child's Sex.
+
+# If you decide to have Weight be the dependent variable, you get
+#   a similar result.
+
+
+# Here, you could decide if you wanted to re-plot the data without
+#   Showing the difference between males and females. It depends on your
+#   audience.
+
+
+```
+
+
+**Q3** Another way to summarize data from statistical models is to use Anova(<model name>) from the `car` library, instead of summary(<model name>).  This method is great because you can designate which test statistic you will use, and which type of "sums of squares" you will use. [You can read the specifications here](https://rdrr.io/cran/car/man/Anova.html).  Install the `car` library and summarize your model for Q2 using an F statistic with type III sums of squares.  What are the differences between this and the model above?
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+library(car)
+
+Anova(test_2, test.statistic = "F", type = "III")
+
+
+# Here there are no differences.
+#
+
+#However, when you use Anova() when you have an X variable with more than 2 levels
+#    you will see that it's much easier to use this function to report a general result
+#    of the effect of that variable, and then you can follow up with post-hoc tests if desired.
+
+```
+
+## Exploring Interactions
+
+### Exploring Interactions
+
+
+**Q4** Create two figures that explore how diet treatments affect children's height and weight regardless of sex. Here, you want `Height` and `Weight` to each be a dependent variable for a separate figure.
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+#  How the diet treatment affects children's height and weight
+#       regardless of sex
+
+# Height
+ggplot(kid_dat, aes(x = Diet, y = Height))+
+  geom_boxplot()+
+  theme_bw()+
+  labs(x = "Diet Treatment", y = "Height (cm)")
+
+# Weight
+ggplot(kid_dat, aes(x = Diet, y = Weight))+
+  geom_boxplot()+
+  theme_bw()+
+  labs(x = "Diet Treatment", y = "Weight (lbs)")
+
+```
+
+
+
+**Q5** Create two models that test for the relationship of either a child's height or weight and how it is affected by the diet treatment regardless of sex. How do you interpret these results? If you see an interaction tell me if it's super-additive or sub-additive. *Hint:* To do this you will need to start by making indicator variables for if the diet has high carbs or protein, and these indicator variables should be factors.
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+# Since this is a factorial experiment, you first need to create
+#   indicator variables for the two diet treatments.
+
+
+# The first step I would use is to create two indicator columns but
+#   fill them with zero values so you know if your upcoming
+#   fills will work correctly (i.e. fill them all with 0's and then
+#   make sure you do counts afterwards to make sure you have the
+#   correct number of 1's and 0's at the end)
+
+
+kid_dat_ind <- kid_dat %>%
+                   add_column(., carb = 0, protein = 0)
+kid_dat_ind
+
+kid_dat_ind$Diet %>% unique
+
+kid_dat_ind$carb[kid_dat_ind$Diet == "HighCarb" |
+                   kid_dat_ind$Diet == "HighProteinHighCarb"] <- 1
+
+kid_dat_ind$protein[kid_dat_ind$Diet == "HighProtein" |
+                      kid_dat_ind$Diet == "HighProteinHighCarb"] <- 1
+
+kid_dat_ind$protein <- as.factor(kid_dat_ind$protein)
+kid_dat_ind$carb <- as.factor(kid_dat_ind$carb)
+
+test_4_height <- lm(Height ~ carb * protein, data = kid_dat_ind)
+summary(test_4_height)
+
+# There is a significant interaction between a high carb and a high
+#   protein diet. So both carbs and protein increase a child's
+#   height, but when you add them both together you get taller kids
+#   than when you have either of these diets alone.
+#
+
+test_4_weight <- lm(Weight ~ carb * protein, data = kid_dat_ind)
+summary(test_4_weight)
+
+
+
+# Here, you only see an additive effect of carbs and protein on a child's
+#   weight. So when you have a diet high in carbs or high in protein you
+#   see increased weight, but not there is no extra effect if you have both
+#   together.
+
+```
+
+
+
+**Q6** What happens if you add sex into these factorial models?  What if you add them additively or as an interaction?  How do you interpret these results?
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+test_5_height1 <- lm(Height ~ carb * protein * Sex, data = kid_dat_ind)
+Anova(test_5_height1)
+
+test_5_height2 <- lm(Height ~ carb * protein + Sex, data = kid_dat_ind)
+Anova(test_5_height2)
+
+
+test_5_weight1 <- lm(Weight ~ carb * protein * Sex, data = kid_dat_ind)
+Anova(test_5_weight1)
+
+test_5_weight2 <- lm(Weight ~ carb * protein + Sex, data = kid_dat_ind)
+Anova(test_5_weight2)
+
+
+# There is no effect of sex on any of these models, so male and
+#   female children respond the same to these diet treatments
+#   and there is no difference between them.
+
+# There seems to be an interactive effect of carbs and protein on height
+#   but just an additive effect of carbs and protein on weight.
+
+
+
+```
+
+
+
+**Q7** Plot how a child's weight is affected by the number of hours of TV watched, taking diet into account. 
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+ggplot(kid_dat_ind, aes(x = HoursTV, y = Weight, color = Diet))+
+  geom_point()+
+  geom_smooth(method = "lm", se = TRUE)+
+  theme_bw()+
+  labs(x = "Hours per Week of TV Watched", y = "Weight (lbs)")
+
+```
+
+**Q8** Create a statistical test that determines how a child's weight is a function of their diet and number of hours of TV watched.  Plot the figure that best represents the outcomes of this model. Make this figure "publication ready".
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+test_7 <- lm(Weight ~ HoursTV * carb * protein - HoursTV:carb:protein, data = kid_dat_ind)
+Anova(test_7)
+
+test_8 <- lm(Weight ~ HoursTV + carb + HoursTV:protein, data = kid_dat_ind)
+summary(test_8)
+
+## These models show similar things, just showing the different formulations.
+
+color_cb <- c("#661100", "#DDCC77")
+
+ggplot(kid_dat_ind, aes(x = HoursTV, y = Weight, color = protein))+
+  geom_point()+
+  scale_color_manual(values = color_cb, labels = c("low","high"))+
+  geom_smooth(method = "lm", se = TRUE)+
+  theme_bw()+
+  labs(x = "Hours per Week of TV Watched", y = "Weight (lbs)")
+
+
+
+```
+
+
+**Q9** Write a paragraph for both the statistical methods and results for questions 7 and 8 as if you were writing these for a publication.  This will be practice for your final module project with your own data. Remember to just stick to the model interpretations for the results section.  
+
+
+> Statistical Methods: To determine if a child's weight is influenced by the number of hours of TV watched and their diet, we used a linear model with weight as the dependent variable, and the interaction of hours of tv watched, diet carbohydrates and diet protein as the independent variables.  We used a backward statistical design, where we started with the full interactive model, and if interactions were not significant, we dropped them until we either found significant terms, or reached a fully additive model.
+
+> Statistical Results:  We did not find a significant effect of carbohydrates consumed on a child's weight, but we found that weight was significantly influenced by the interaction of the number of hours of TV watched and the protein in a child's diet. When a child has a higher protein diet, they increase weight faster as they watch more hours of TV than when they have a lower protein diet.
+
+
+
+
+
+

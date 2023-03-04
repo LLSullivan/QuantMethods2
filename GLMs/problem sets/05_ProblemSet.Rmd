@@ -1,0 +1,146 @@
+
+---
+title: "Problem Set 05"
+author: Due Mar 18, 2022
+output: 
+  html_document:
+    float: yes
+    css: "style.css"    
+editor_options: 
+  chunk_output_type: console
+mainfont: Arial
+mathfont: Arial
+fontsize: 12pt
+subtitle: Lauren Sullivan, BIO_SC 8002_01
+---
+
+
+# {.tabset .tabset-pills .tabset-fade}
+
+## Temperature Sex Determination 
+
+### Non-Normal Models
+
+First we will look at a dataset of the sex ratio of turtles on islands in the Mississippi river with "ratio.csv". Researchers sampled 12 turtle nests in each of 4 islands, measured the temperature of each nest, and then counted the number of male (1) and female (0) turtle babies in each nest. Each nest amazingly had exactly 20 baby turtles each!  Assume nests are independent, and there are no differences among nests other than the islands they are found on, and the temperature of each nest. Nests can have different temperatures because of where females lay them (in the shade or in the sun).
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+###############
+#
+# 05 PROBLEM SET
+# 
+# DUE:        March 18, 2022
+# 
+# CREATED BY: Lauren Sullivan
+# FILES:      "ratio.csv"
+#             "mass.csv"
+#
+###############
+
+
+########### setup
+rm(list=ls())
+
+#setwd("~/Dropbox/Academics/Teaching/Advanced Quant Methods/modules/2) linear_nonlinear_mixedeffects/5_nonlinear_nonnormal")
+library(tidyverse)
+library(stats)  #for nls()
+library(bbmle)  #for AICtab()
+
+########### data
+ratio <- read_csv("../data/ratio.csv")
+mass <- read_csv("../data/mass.csv")
+
+```
+
+
+
+**Q1** What is a good distribution to describe the dependent variable (here: number of males vs females in each nest)?  What is the support of this distribution? What is it's functional form and what does it mean?
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+```
+
+
+**Q2** Before analyzing the data, let's visualize it. Create a figure of the per nest male-to-female ratio, and how that dependent variable varies by temperature and island. What trends jump out at you right away re: the relationship between $Y$ and the $X$'s?
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+
+```
+
+
+**Q3** How would you confirm your suspicions about islands graphically?
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+```
+
+
+**Q4** Run the statistical test that will determine the effect of island identity and temperature on the sex ratio of these islands using the appropriate `glm()`.  What does this data tell us about these turtle nests?  Hint: The response variable ($Y$) should be classified as a cbind() of the number of males and the number of not males (aka females) with binomial distribution.  [See the "Details" section on how to parameterize binomial and quasibinomial models here.](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/glm)
+
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+```
+
+### Determining Functional Forms
+
+**Q5** It seems like sunflecks might be a good predicter of nest temperature, but we are not sure what the shape of that relationship is. Plot this relationship.
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+```
+
+
+**Q6** Fit $Y$ (temperature) as a function of $X$ (sunflecks) to find out if there is a significant relationship between these two variables. To do this, compare a linear, exponential, quadratic, and a power relationship. Hint: for your exponential function, try $Y = a * exp(-b*X)$, and your power function try $Y = a * X^b$.  What are the coefficients from the resulting best fit model?
+
+
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+
+
+
+```
+
+**Q7**  Plot the relationship between sunflecks and temperature, and include the predicted fits from all of the models you tried and compared?
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+
+```
+
+## Gecko Body Mass
+
+### Fitting Distribtuions 
+
+Ok, now we are going to practice fitting distributions to our data using `mle2()`.  We will practice with a dataset of body mass of geckos.  We have 50 animals, and their bodymass, in "mass.csv".
+
+
+**Q8** Create a density plot of the bodymass data.
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+
+```
+
+**Q9** Since the distribution seems to be continuous, try fitting a gaussian, a gamma, and a weibull distribution to the data and see which fits best of those three. Hint: you will need `library("stats")` for some of these distributions.
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+```
+
+**Q10**  Plot your data and the fit distributions to confirm your AIC results.
+
+```{r, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+
+```
