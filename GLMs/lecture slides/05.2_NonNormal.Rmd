@@ -1,0 +1,405 @@
+---
+title: "Nonlinear, Non-normal models"
+author: "Lauren Sullivan"
+date: 'Module: Linear, Nonlinear, and Mixed Effects Models'
+output:
+  beamer_presentation: default
+  ioslides_presentation: default
+subtitle: 'Lecture 05.2: Generalized Linear Models (GLMs)'
+mainfont: Calibri
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+rm(list=ls())
+library(tidyverse)
+library(stats)  #for nls()
+library(bbmle)  #for AICtab()
+library(gridExtra)  #for multipanel figures in ggplot with grid.arrange()
+library(SuppDists) #for inverse gaussian distribution
+
+```
+---
+
+
+## Readings
+
+\textbf{Required for class:}
+
+  - NA
+
+\bigskip\textbf{Optional:}
+
+  - [\textcolor{teal}{Crawley, M. \textit{Statistics: An Introduction Using R}}](https://www.amazon.com/Statistics-Introduction-Michael-J-Crawley/dp/1118941098/ref=dp_ob_title_bk)
+
+  - [\textcolor{teal}{Bolker, B. \textit{Ecological Models and Data in R - Ebook version}}](https://ms.mcmaster.ca/~bolker/emdbook/book.pdf)
+
+  - [\textcolor{teal}{R-tutorials, Nonlinear Regressions}](https://data-flair.training/blogs/r-nonlinear-regression/)
+
+
+
+## General*ized* Linear Models (GLMs)
+
+Generalized linear models calculate nonlinear regressions when you have non-constant variance in the data, or when your dependent variables are not normally distributed.
+
+- Sometimes you know you have nonlinear or non-normal data and you a-priori know you need to use a non-standard linear model.  For example: 
+
+    - Exponential growth.
+    - Binary response data (survived till the next time point yes/no)
+    - Count data
+
+
+
+## Model Assumptions
+
+Linear Model assumptions:
+
+1.  Relationship between dependent and independent variables are linear 
+2.  (Multivariate) Normal distributions of error variance $\epsilon$
+3.  Equal variance (aka - Homoscedasticity)
+4.  Independence of observed samples
+
+
+Generalized Linear Models take \#1 and \#2 a step further, and assume that the error variance of the dependent variable comes from a family of distributions knows as the *Exponential Family*.
+
+- The [\textcolor{teal}{Exponential Family}](https://en.wikipedia.org/wiki/Exponential_family) includes many of the most of the common distributions, including: Normal, Exponential, Beta, Binomial, Chi-Square, Gamma, Poisson, Wishart, etc.
+
+
+## `glm()`
+
+To analyze GLM's in R, you use the function [\textcolor{teal}{glm()}](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/glm), with an additional argument for `family`.  
+
+- This `family` argument depends on the type of data you are trying to model.
+
+    - Binomial
+    - Poisson
+    - Inverse Gaussian
+
+    
+<!-- ## Exponential Data -->
+
+
+<!-- \scriptsize -->
+<!-- ```{r, eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.height = 6} -->
+
+
+<!-- x <- seq(1,10,0.01) -->
+
+
+<!-- #y <- 2*2^x -->
+<!-- y <- exp(x) -->
+<!-- y2 <- exp(-x) -->
+
+<!-- z <- data.frame(cbind(x,y,y2)) -->
+
+<!-- one <- ggplot(z, aes(x,y))+ -->
+<!-- geom_point()+ -->
+<!--   theme_bw()+ -->
+<!--   theme(axis.text = element_blank())+ -->
+<!--   theme(axis.title.x = element_text(face="bold", size=16), -->
+<!--         axis.title.y = element_text( face="bold", size=16, angle=359, vjust = -.01))+ -->
+<!--   theme(plot.margin = unit(c(1,1,1,1), "cm")) -->
+
+
+
+<!-- two <- ggplot(z, aes(x,y2))+ -->
+<!--   geom_point()+ -->
+<!--   theme_bw()+ -->
+<!--   theme(axis.text = element_blank())+ -->
+<!--   theme(axis.title.x = element_text(face="bold", size=16), -->
+<!--         axis.title.y = element_text( face="bold", size=16, angle=359, vjust = -.01))+ -->
+<!--   theme(plot.margin = unit(c(1,1,1,1), "cm")) -->
+
+<!-- grid.arrange(one, two, nrow=1) -->
+
+
+
+
+<!-- ``` -->
+<!-- \normalsize -->
+
+<!-- *Graphics hint:* Use library(gridExtra) and `grid.arrange()` to get multi-panel figures that don't work with `facet_wrap()`. -->
+
+<!-- - PDF: $$f(x, \lambda) = \begin{cases} \lambda\exp^{-\lambda x} & x \geq 0 \\ 0 & x < 0  \end{cases}$$ -->
+
+
+
+
+
+
+## Binomial Data
+
+
+\scriptsize
+```{r, eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.height = 6}
+
+
+
+x <- seq(1,30,1)
+
+
+
+y <- dbinom(x, 20, .5)
+y1 <- dbinom(x, 20, .7)
+y2 <- dbinom(x, 40, .5)
+
+
+z <- data.frame(cbind(x,y,y1,y2))
+
+z <- gather(z, "y", "y1", "y2", key = "variable", value = "value" )
+
+ggplot(z, aes(x = x, y = value, color = variable))+
+  geom_point(cex = 4, alpha = 0.4)+
+  theme_bw()+
+  theme(axis.text = element_blank())+
+  theme(axis.title = element_text(face="bold", size=16))+
+  theme(legend.position = "none")
+
+```
+
+\normalsize
+The Binomial distribution is discrete, this is called a proability mass function. Often, an observation of 1 is a success (survival) and 0 is a failure (death). 
+
+
+## Binomial Distribution
+
+[\textcolor{teal}{The Binomial Distribution}](https://en.wikipedia.org/wiki/Binomial_distribution) is discrete and describes the number of successes in a sequence of *n* independent experiments/trials.
+
+- Parameters: $n \in \{1,2,3...\}$ (number of trials), $p \in [0,1]$ (success probability for each trial)
+- Support: $k \in \{1,2,3...,n\}$ (number of successes)
+- PMF: $$\binom{n}{k} = \frac{n!}{k!(n-k)!}$$
+
+
+\bigskip
+Some Examples:
+
+- Survival Analysis
+- mRNAseq reads, where you have $n$ reads (or trials), with a probaiblity of success $p$ for a particular transcript/gene in each read
+- Anything with 0/1 data through time/space
+
+
+## Binomial Experiment
+
+Imagine seeding survival (or days until death due to dessication) of three different varieties of soybean.
+
+```{r, eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.height = 5}
+
+seedling <- read_csv("../data/seedling.csv")
+
+
+ggplot(seedling, aes(x = days_till_death, fill = variety))+
+  geom_histogram(binwidth = 1, alpha = 0.5)+
+  theme_bw()+
+  theme(axis.title = element_text(face="bold", size=16),
+         legend.text = element_text(size = 16),
+         legend.title = element_text(size = 18))+
+  labs(x = "Days Till Death", y = "Count")
+
+
+```
+
+\normalsize
+17 days till death means 17 days surving (1's), and the rest of the days dead (0's).
+
+
+## Binomial GLM
+
+Does the survival of soybean seedlings depend on the variety?
+
+```{r, eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.height = 5}
+
+seedling <- gather(seedling, "day1", "day2", "day3", "day4", "day5", "day6", "day7", "day8", "day9", "day10", "day11", "day12", "day13", "day14", "day15", "day16", "day17", "day18", "day19", "day20", key = "day", value = "alive")
+```
+
+
+\tiny
+```{r, eval=TRUE, echo=TRUE, warning=FALSE, message=FALSE, fig.height = 5}
+
+summary(glm(alive ~ variety, family = "binomial",
+            data = seedling))
+
+```
+
+
+
+
+
+
+
+
+
+
+
+## Poisson Data
+
+
+\scriptsize
+```{r, eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.height = 6}
+
+
+x <- seq(1,10,0.01)
+
+y <- dpois(x, lambda = 1)
+y1 <- dpois(x, lambda = 4)
+y2 <- dpois(x, lambda = 10)
+
+z <- data.frame(cbind(x,y,y1,y2))
+
+z <- gather(z, "y", "y1", "y2", key = "variable", value = "value" )
+
+ggplot(z, aes(x = x, y = value, color = variable))+
+  geom_line(cex = 4, alpha = 0.4)+
+  theme_bw()+
+  theme(axis.text = element_blank())+
+  theme(axis.title = element_text(face="bold", size=16))+
+  theme(legend.position = "none")
+
+
+
+
+```
+
+\normalsize
+The Poisson distribution is also discrete, thus it appears as points of probability at each $k$.
+
+
+## Poisson Distribution
+
+[\textcolor{teal}{The Poisson Distribution}](https://en.wikipedia.org/wiki/Poisson_distribution)  describes the probability of a given number of events occurring in a fixed interval of time or space.
+
+- Parameters: $\lambda \in \mathbb{R}^+$ (rate - must be a real number)
+- Support: $x \in \mathbb{N}_0$ (natural numbers starting from 0)
+- PMF: $$f(x; \lambda,k) = \frac{\lambda^k exp^{-\lambda}}{k!}$$
+
+
+\bigskip
+Some Examples:
+
+- The number of meteorites greater than 1 meter diameter that strike Earth in a year
+- Death or births of individuals at a given time
+- Number of dispersal events at a given distance
+
+
+## Poisson Experiment
+
+Let's look at the survival of 2 populations of 500 mice each on a different diet: one high in lead, one high in mercury. We have time in hours since the diet was fed to the mice, and the number of mice from each population that died at each time point.
+
+```{r, eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.height = 5}
+
+mice_diet <- read_csv("../data/exp_dat.csv")
+
+ggplot(mice_diet, aes(x = hours, y = number_dead, color = treatment))+
+  geom_point(cex=2)+
+  geom_smooth()+
+  theme_bw()+
+  theme(axis.title = element_text(face="bold", size=16),
+        legend.text = element_text(size = 16),
+        legend.title = element_text(size = 18))+
+  labs(x = "Time (hours)", y = "Number dead")
+
+
+```
+
+## Poisson GLM
+
+Is the number of mice that die a function of time, and is there a difference between the two treatments?
+
+\tiny
+```{r, eval=TRUE, echo=TRUE, warning=FALSE, message=FALSE, fig.height = 5}
+
+summary(glm(number_dead ~ hours + treatment, family = "poisson", 
+            data = mice_diet))
+
+```
+
+
+## Inverse Gaussian Data
+
+
+\scriptsize
+```{r, eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.height = 6}
+
+x <- seq(1,30,0.1)
+
+
+
+y <- dinvGauss(x, 5,1)
+y1 <- dinvGauss(x, 5,7)
+y2 <- dinvGauss(x, 10,20)
+
+z <- data.frame(cbind(x,y,y1,y2))
+
+z <- gather(z, "y", "y1", "y2", key = "variable", value = "value" )
+
+ggplot(z, aes(x = x, y = value, color = variable))+
+  geom_line(cex = 4, alpha = 0.4)+
+  theme_bw()+
+  theme(axis.text = element_blank())+
+  theme(axis.title = element_text(face="bold", size=16))+
+  theme(legend.position = "none")
+
+
+
+```
+
+\normalsize
+The inverse gaussian distribution has two parameters, a central tendancy ($\mu$) and a dispersion ($\lambda$)
+
+
+## Inverse Gaussian Distribution
+
+[\textcolor{teal}{The Inverse Gaussian Distribution}](https://en.wikipedia.org/wiki/Inverse_Gaussian_distribution) does not have a nice description like the other distributions, but is a helpful 2-parameter, skewed distribution. As $\lambda$ tends towards infinity, this looks more like a gaussian distribution.
+
+- Parameters: $\mu  > 0, \lambda > 0$
+- Support: $x \in (0,\infty)$
+- PDF: $$f(x; \mu, \lambda) = \sqrt{ \left( \frac{\lambda}{2 \pi x^3} \right)} exp \left[- \frac{\lambda(x - \mu)^2}{2 \mu^2x} \right]$$
+
+
+\bigskip
+Some Examples:
+
+- Dispersal events over an infinite distance
+- non-negative, positively skewed data.
+
+
+## Inverse Gaussian Experiment
+
+Dispersal of 3 different frog species away from a home pond. Is there a difference in movement by species?
+
+```{r, eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.height = 6}
+
+frog <- read_csv("../data/movement.csv")
+
+ggplot(frog)+
+  geom_histogram(aes(distance, fill = species), alpha = 0.5)+
+  theme_bw()+
+  theme(axis.title = element_text(face="bold", size=18),
+        legend.text = element_text(size = 18),
+        legend.title = element_text(size = 18))+
+  labs(x = "Distance (m)", y = "Number moved")+
+  xlim(0,30)
+
+
+```
+
+## Inverse Gaussian GLM
+
+Do species of frogs disperse with different patterns?
+
+\tiny
+```{r, eval=TRUE, echo=TRUE, warning=FALSE, message=FALSE, fig.height = 5}
+
+summary(glm(distance ~ species, family = "inverse.gaussian",
+            data = frog))
+
+```
+
+
+
+
+
+
+
+
