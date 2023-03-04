@@ -1,0 +1,422 @@
+---
+title: "Data Transformation and Exploration"
+subtitle: "Lecture 3.4: Data Simulation"
+author:  "Lauren Sullivan"
+date: "Module: Data Management, Visualization & Reproducibility"
+output: beamer_presentation
+mainfont: Calibri 
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(tidyverse)
+library(cowplot)
+theme_set(theme_cowplot())
+
+```
+
+
+
+## Data Simulation
+
+Sometimes you need to simulate data to determine:
+
+- if your models are working like you think they are
+- to determine appropriate sample size (e.g. power analysis)
+- to understand your data better
+
+
+## the 4 types of simulator functions in R
+
+R has 4 built in functions for most distributions that you will find useful when simulating data.
+
+- `r` - for generating random numbers from a distribution
+- `d` - for density which evaluates a distribution at a certain point
+- `p` - for evaulating the cumulative distribution function for a given distribution
+- `q` - for the quantile function
+
+## `rnorm()`
+
+```{r,  echo=TRUE, warning=FALSE, message=FALSE}
+rnorm(10, mean = 1, sd = 0.5)
+
+```
+
+
+## `rnorm()`
+
+```{r,  echo=TRUE, warning=FALSE, message=FALSE}
+rnorm(10, mean = 1, sd = 0.5)
+rnorm(10, mean = 1, sd = 0.5)
+
+```
+
+
+
+## `set.seed()`
+
+```{r,  echo=TRUE, warning=FALSE, message=FALSE}
+set.seed(10)
+rnorm(10, mean = 1, sd = 0.5)
+set.seed(10)
+rnorm(10, mean = 1, sd = 0.5)
+
+```
+
+
+## Plot the distribution
+\scriptsize
+```{r,  echo=TRUE, warning=FALSE, message=FALSE}
+one <- rnorm(1000000, mean = 1, sd = 0.5)
+dat <- tibble(one)
+
+ten <- rnorm(1000000, mean = 5, sd = 2)
+dat2 <- tibble(ten)
+```
+
+## Plot the distribution with `rnorm()`
+\scriptsize
+```{r,  echo=FALSE, warning=FALSE, message=FALSE}
+ggplot(dat)+
+  geom_density(aes(x = one), lwd = 2, lty = 1)+
+  geom_density(aes(x = ten), lwd = 2, lty = 2)
+
+```
+
+
+
+## `pnorm()`
+
+Calculate the probability of a certain point on a distribution
+
+\scriptsize
+```{r,  echo=TRUE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+
+pnorm(2, mean = 1, sd = 0.5)
+```
+
+```{r,  echo=FALSE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+data <- seq(-1, 3, length = 30)
+data_t <- tibble(data)
+data_t$dt <- dnorm(data, mean = 1, sd = 0.5)
+
+
+dnorm_limit <- function(x) {
+    y <- dnorm(x, mean = 1, sd = 0.5)
+    y[x < -1  |  x > 2] <- NA
+    return(y)
+}
+
+
+ggplot(data_t)+
+  geom_line(aes(x = data, y = dt), lwd = 2, lty = 1)+
+  stat_function(fun = dnorm_limit, geom = "area", fill = "blue", alpha = 0.2)+
+  geom_vline(xintercept = 2,  color = "blue")
+
+
+
+
+
+
+```
+
+## `pnorm()`
+
+
+\scriptsize
+```{r,  echo=TRUE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+
+pnorm(0.5, mean = 1, sd = 0.5)
+
+```
+
+```{r,  echo=FALSE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+
+dnorm_limit <- function(x) {
+    y <- dnorm(x, mean = 1, sd = 0.5)
+    y[x < -1  |  x > 0.5] <- NA
+    return(y)
+}
+
+
+ggplot(data_t)+
+  geom_line(aes(x = data, y = dt), lwd = 2, lty = 1)+
+  stat_function(fun = dnorm_limit, geom = "area", fill = "blue", alpha = 0.2)+
+  geom_vline(xintercept = 0.5,  color = "blue")
+
+```
+
+## `dnorm()`
+
+Find what the probability is at any point with the `dnorm()` function.
+
+\scriptsize
+```{r,  echo=TRUE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+
+dnorm(1, mean = 1, sd = 0.5)
+
+```
+```{r,  echo=FALSE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+
+ggplot(dat)+
+  geom_density(aes(x = one), lwd = 2, lty = 1)+
+  geom_hline(yintercept = dnorm(1, mean = 1, sd = 0.5),  color = "green")+
+  geom_vline(xintercept = 1,  color = "blue")
+```
+
+## `dnorm()`
+
+\scriptsize
+```{r,  echo=TRUE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+
+dnorm(2, mean = 1, sd = 0.5)
+
+```
+```{r,  echo=FALSE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+
+ggplot(dat)+
+  geom_density(aes(x = one), lwd = 2, lty = 1)+
+  geom_hline(yintercept = dnorm(2, mean = 1, sd = 0.5),  color = "green")+
+  geom_vline(xintercept = 2,  color = "blue")
+```
+
+
+## Plotting the distribution with `dnorm()`
+
+
+```{r,  echo=FALSE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+
+data <- seq(-1, 3, length = 30)
+data_t <- tibble(data)
+data_t$dt <- dnorm(data, mean = 1, sd = 0.5)
+ggplot(data_t)+
+  geom_line(aes(x = data, y = dt), lwd = 2, lty = 1)
+
+```
+
+## `qnorm()`
+
+Used to find the probabilities of certain quantiles
+
+\scriptsize
+```{r,  echo=TRUE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+
+qnorm(0.85, mean = 1, sd = 0.5)
+
+```
+
+
+```{r,  echo=FALSE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+
+
+ggplot(data_t)+
+  geom_line(aes(x = data, y = dt), lwd = 2, lty = 1)+
+  geom_vline(xintercept = qnorm(0.85, mean = 1, sd = 0.5),  color = "blue")
+
+```
+
+
+
+## Other distributions
+\scriptsize
+```{r,  echo=TRUE, warning=FALSE, message=FALSE}
+rpois(10, lambda = 1)
+
+rbinom(10, size=12, prob=0.2)
+
+rgamma(10, shape = 2, rate = 0.5)
+```
+
+
+## Simulate Data Based on Small Samples
+
+
+\scriptsize
+
+```{r,  echo=FALSE, warning=FALSE, message=FALSE}
+dat <- tibble(ID = seq(1,20, 1), 
+              mass = c(16.04601, 21.42249 ,19.06931, 20.54750 ,18.11079, 23.83877, 22.08287, 26.51201, 20.11507, 18.43206, 10.74246, 17.87718, 22.34310,  8.81798, 15.79852, 15.32697, 15.17099, 24.32051, 16.5276, 27.11078),
+              sex = c(rep("F", 10), rep("M", 10))
+                      )
+```
+```{r,  echo=TRUE, warning=FALSE, message=FALSE}
+head(dat)
+
+dat %>%
+  group_by(sex) %>%
+  summarize(mean_mass = mean(mass),
+            sd_mass = sd(mass))
+
+
+
+```
+
+
+## Simulate Data Based on Small Samples
+
+
+\scriptsize
+
+```{r,  echo=TRUE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+
+ggplot(dat)+
+  geom_histogram(aes(x = mass, fill = sex))
+
+```
+
+## Simulate Data Based on Small Samples
+
+
+\scriptsize
+
+```{r,  echo=TRUE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+set.seed(100)
+dat_females <- rnorm(1000, mean = 20.61769, sd = 3.028194)
+set.seed(24)
+dat_males <- rnorm(1000, mean = 17.40361, sd = 5.748625)
+
+dat_all <- tibble(c(dat_females, dat_males))
+dat_all$sex <- c(rep("F", 1000), rep("M", 1000))
+names(dat_all)[1] <- 'mass'
+
+```
+
+## Simulate Data Based on Small Samples
+
+```{r,  echo=FALSE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+ggplot(dat_all)+
+   geom_density(aes(x = mass, color = sex), lwd = 2)
+
+
+```
+
+
+## Simulate a Linear Model
+
+You may want to simulate from a specific model, instead of from a distribution of random numbers.  So say you want to simulate from this equation:
+
+
+\smallskip
+$y = \beta_0 + \beta_1x + \epsilon$, where $\epsilon \sim \mathcal{N}(0,2), \beta_0 = 0.5,$ and $\beta_1 = 2$
+
+
+\scriptsize
+```{r,  echo=TRUE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+set.seed(20)
+
+#simulate predictor (x) variables
+x <- rnorm(100)
+
+#simulate the error
+e <- rnorm(100, 0, 2)
+
+# calculate the response variables (y) from the model
+y <- 0.5 + 2*x + e
+
+summary(y)
+```
+
+
+
+
+## Simulate a Linear Model
+
+
+
+\scriptsize
+```{r,  echo=FALSE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+dat <- as.tibble(cbind(x,y))
+names(dat)[1] <- 'x'
+names(dat)[2] <- 'y'
+
+
+ggplot(dat)+
+  geom_point(aes(x,y), size = 2)
+
+```
+
+
+
+## Simulate a Linear Model with a Binomial x
+
+You could also use the same model, but instead have your x's distributed as a binomial variable (1's or 0's)
+
+
+
+\scriptsize
+```{r,  echo=TRUE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+set.seed(20)
+
+#simulate predictor (x) variables
+x <- rbinom(100, 1, 0.5)
+str(x)
+
+#simulate the error
+e <- rnorm(100, 0, 2)
+
+# calculate the response variables (y) from the model
+y <- 0.5 + 2*x + e
+
+```
+
+
+
+## Simulate a Linear Model with a Binomial x
+
+
+\scriptsize
+```{r,  echo=FALSE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+dat <- as.tibble(cbind(x,y))
+names(dat)[1] <- 'x'
+names(dat)[2] <- 'y'
+
+
+ggplot(dat)+
+  geom_point(aes(x=x,y=y), size = 2)
+
+```
+
+
+## Simulate a Generalized Linear Model with Poisson
+
+You may also want to simulate a model from something other than a normal distribution.  For example, say you want to use a Poisson log-linear model (often good for count data):
+
+
+\smallskip
+$Y \sim Poisson(\mu)$
+
+$log(\mu) = \beta_0 + \beta_1x$, where $\beta_0 = 0.5,$ and $\beta_1 = 0.2$
+
+
+\scriptsize
+```{r,  echo=TRUE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+set.seed(20)
+
+#simulate the predictor variable as before
+x <- rnorm(100)
+
+#calculate the log mean of the model
+log.mu <- 0.5 + 0.2*x
+
+# calculate the response variables (y) from the possion distn.
+y <- rpois(100, exp(log.mu))
+
+```
+
+
+## Simulate a Generalized Linear Model with Poisson
+
+\scriptsize
+```{r,  echo=FALSE, warning=FALSE, message=FALSE, fig.height=3.5, fig.width=6}
+dat <- as.tibble(cbind(x,y))
+names(dat)[1] <- 'x'
+names(dat)[2] <- 'y'
+
+
+ggplot(dat)+
+  geom_point(aes(x=x,y=y), size = 2)
+
+```
+

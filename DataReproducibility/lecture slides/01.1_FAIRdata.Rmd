@@ -1,0 +1,141 @@
+---
+title: "Best Coding Practices"
+subtitle: "Lecture 01.1: FAIR Guiding Principles"
+author:  "Lauren Sullivan"
+date: "Module: Data Management, Visualization & Reproducibility"
+output: beamer_presentation
+mainfont: Calibri 
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+```
+---
+
+## Helpful Readings
+
+
+  - [\textcolor{teal}{Wilkinson et al. (2016) The FAIR Guiding Principles for Scientific Data Management and Stewardship. \textit{Scientific Data}. 3:160018.}](https://www.nature.com/articles/sdata201618)
+  
+  - [\textcolor{teal}{Sandve et al. (2013) Ten Simple Rules for Reproducible Computational Research. \textit{PLOS Computational Biology}.}](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1003285) 
+  
+  - [\textcolor{teal}{Powers, S.M., S.E. Hampton (2019) Open Science, Reproducibility, and Transparency in Ecology. \textit{Ecological Applications}. 29:1.}](https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/eap.1822)
+  
+  - [\textcolor{teal}{GO FAIR Initiative}](https://www.go-fair.org/go-fair-initiative)
+
+
+
+## Four Foundational Principles of Data Management
+
+1. **F**indability
+2. **A**ccessibility
+3. **I**nteroperability
+4. **R**eusability (Reproducibility)
+
+\bigskip If we care about long term data useability, sharing and stewardship, then we need to think about how and when to make our data FAIR. This is especially important if we want our work to be accessed by multiple stakeholders (i.e. industry, public, education, policy, *computers?*)
+
+\bigskip These ideas will come in handy when writing future "data management plans" required for many grants.
+
+
+## Quick Note
+
+The FAIR guidelines were originally set up to allow for use across all platforms and stakeholders, and to be "machine-actionable" to allow for large-scale, internet-driven data discovery. 
+
+In many cases our work will fall outside this scope, but the principles are still important. Where appropriate, I have modified the FAIR Guiding Principles to match work that may never be fully machine-actionable. For those seriously interested in machine-actionable data sharing, there are many resources on the internet for you (e.g. [\textcolor{teal}{FORCE11}](https://www.force11.org/group/fairgroup/fairprinciples)).
+
+## Findability
+
+To be *Findable*...
+\bigskip
+
+1.  data and code must be non-obscure  
+    - Is there a statement in your paper about where to find your data and code?
+2.  data must be described by detailed metadata.
+3.  data and metadata are assigned globally unique and persistent identifiers so as to link across datasets.
+
+
+## Accessibility
+
+To be *Accessible*...
+\bigskip
+
+1.  data and code are open, free, and able to be implemented easily (you want others to be able to reproduce your work).
+    - This includes clear annotation of code.
+2.  metadata must also be available in order for others to understand what you did.
+
+
+## Interoperability
+
+A quick definition.  Interoperability is the ability of data or tools from non-cooperating resources to integrate or work together with minimal effort.
+\bigskip
+
+To be *Interoperable*...
+\bigskip
+
+1.  data and metadata use a language that's common and broadly applicable (e.g. R).
+2.  data, and metadata especially, use vocabulary that follow FAIR principles.
+    - You want others to be able to understand what you did.
+3.  data and metadata include references to other sets of data and metadata or studies when appropriate.
+
+
+
+## Reusability
+
+To be *Reusable*...
+\bigskip
+
+1.  metadata are described in depth.
+2.  data and metadata use field-specific community standards.
+3.  data and code must be produced in formats that are common to the field and can be repeated.
+    -  Make sure to include the version of your programs and packages used.
+
+
+
+
+## Problems with FAIR data?
+
+There can be a lot of issues with open source, FAIR data.  Some are listed below.  We will discuss these issues in class.
+
+- Privacy of those not protected by IRB (e.g. land owners)
+- Potential poaching
+- Interest in writing future follow up papers with data
+
+
+## Where to Store Data, Metadata and Code
+
+Here are some resources for storing data, metadata and code for your papers. These options range in FAIRness.
+
+-------------------------------------------------------------
+**Cost**       **Source**
+
+-------------- -------------------------------------------------
+Cost of pub.   Supplemental information for paper
+
+
+Free           [\textcolor{teal}{Zenodo}](https://zenodo.org/) 
+               
+               [\textcolor{teal}{Open Science Framework (OSF)}](https://osf.io/) 
+               
+               [\textcolor{teal}{Environmental Data Initiative (EDI)}](https://environmentaldatainitiative.org/)
+               \scriptsize{*Uses FAIR practices. Free for most ecologists. Large datasets may require fees.}
+
+               [\textcolor{teal}{Dataverse}](https://dataverse.org/)
+               \scriptsize{*Pretty sure its free.}
+
+               [\textcolor{teal}{Figshare}](https://figshare.com/)
+               
+               
+Small fee      [\textcolor{teal}{Dryad}](https://datadryad.org/stash) 
+               \scriptsize{*free @ some journals where required.}               
+       
+Not sure       [\textcolor{teal}{GenBank}](https://www.ncbi.nlm.nih.gov/genbank/)
+
+               [\textcolor{teal}{Worldwide Protein Data Bank (wwPDB)}](https://www.wwpdb.org/)
+               \scriptsize{*Uses FAIR practices.}
+
+
+-------------------------------------------------------------
+*If you have other ideas to add to or improve this list please share!*
+
