@@ -1,6 +1,4 @@
 # QuantMethods2
-Modules from Quantitative Methods in the Life Sciences 2 at University of Missouri - 2022
-
 Here I have uploaded all of the required materials for 3 modules in the Advanced Quantitative Methods in the Life Sciences course that I taught at University of Missouri.  There are three modules:  1) Data Reproducibility, 2) Generalized Linear Models, and 3) Multivariate Models.  Within each module you will see folders that contain the following listed below.
 
 
