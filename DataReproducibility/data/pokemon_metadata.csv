@@ -1,0 +1,26 @@
+﻿COLUMN,DESCRIPTION
+Number,"Pokemon Number (1, .., n)"
+Name,Pokemon Name
+Type_1,Pokemon Type
+Type_2,Pokemon Second Type
+HP,Hit Power (units)
+Attack,Attack Power (units)
+Defense,Defense Power (units)
+Speed,Speed Power (units)
+Generation,"Generation (1, .., 7)"
+Pr_Male,Percent Male (%)
+Height_and_Weight_stats,height:weight (m:kg)
+Body_Style,Morphology
+isLegendary,TRUE == IsLegendary
+Black,catch rate for Black Pokemon
+Blue,catch rate for Blue Pokemon
+Brown,catch rate for Brown Pokemon
+Green,catch rate for Green Pokemon
+Grey,catch rate for Grey Pokemon
+Pink,catch rate for Pink Pokemon
+Purple,catch rate for Purple Pokemon
+Red,catch rate for Red Pokemon
+White,catch rate for White Pokemon
+Yellow,catch rate for Yellow Pokemon
+Special_Move,Special attack or defense
+Special_Move_Power,the strength of that special move (joules)
